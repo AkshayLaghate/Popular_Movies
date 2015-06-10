@@ -1,5 +1,6 @@
 package com.nano.popularmovies;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
@@ -26,11 +27,13 @@ public class MainActivity extends AppCompatActivity {
 
     Bitmap[] imgs = new Bitmap[10];
     GridView gridview;
+    ProgressDialog pd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
 
         new loadImgs().execute();
@@ -61,17 +64,23 @@ public class MainActivity extends AppCompatActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+
 
         //noinspection SimplifiableIfStatement
         switch (item.getItemId()) {
-            case R.id.action_settings:
-
-                return true;
 
             case R.id.refresh:
-                //Picasso.with(this).load("http://image.tmdb.org/t/p/w185//nBNZadXqJSdt05SHLqgT0HuC5Gm.jpg").into(iv);
-                return true;
+                new loadImgs().execute();
+
+                break;
+
+            case R.id.menuSortNewest:
+
+                break;
+
+            case R.id.menuSortRating:
+
+                break;
         }
 
 
@@ -139,12 +148,13 @@ public class MainActivity extends AppCompatActivity {
                 ImageView imageView = (ImageView) gridView
                         .findViewById(R.id.ivGrid);
 
-                imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+
+                imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
 
                 imageView.setPadding(8, 8, 8, 8);
 
                 TextView tvGrid = (TextView) gridView.findViewById(R.id.tvGrid);
-                tvGrid.setText("Movie #1");
+                tvGrid.setText("Movie #" + (position + 1));
 
 
                 imageView.setImageBitmap(imgs[position]);
@@ -162,10 +172,20 @@ public class MainActivity extends AppCompatActivity {
 
     class loadImgs extends AsyncTask<String, String, String> {
 
+
         @Override
         protected void onPreExecute() {
             // TODO Auto-generated method stub
+
             super.onPreExecute();
+
+            pd = new ProgressDialog(MainActivity.this);
+            pd.setMessage("Loading Movies Info..");
+            pd.setCanceledOnTouchOutside(false);
+            pd.setIndeterminate(false);
+            pd.show();
+
+
 
         }
 
@@ -190,6 +210,7 @@ public class MainActivity extends AppCompatActivity {
             // TODO Auto-generated method stub
 
             gridview.setAdapter(new ImageAdapter(getApplicationContext()));
+            pd.dismiss();
 
         }
     }
