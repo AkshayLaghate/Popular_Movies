@@ -1,16 +1,22 @@
 package com.nano.popularmovies;
 
+
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
@@ -39,9 +45,10 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG_THUMBNAIL = "poster_path";
     private static final String TAG_POPULARITY = "popularity";
     private static final String TAG_RATING = "vote_average";
+    private static final String TAG_DATE = "release_date";
     private static String urlPopular = "http://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&api_key=3545a57a2f23dac5f3a1a0ddb84aa0df";
     private static String urlRating = "http://api.themoviedb.org/3/discover/movie?sort_by=vote_average.desc&api_key=3545a57a2f23dac5f3a1a0ddb84aa0df";
-    Bitmap[] imgs = new Bitmap[10];
+    Bitmap[] imgs;
     GridView gridview;
     ProgressDialog pd;
     ImageAdapter adapter;
@@ -49,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
     JSONArray movies = null;
     // Hashmap for ListView
     ArrayList<HashMap<String, String>> movieList;
+    ActionBar bar;
     private String url = urlPopular;
 
     @Override
@@ -57,12 +65,20 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
 
+        bar = getSupportActionBar();
+        bar.setTitle("Most Popular");
         adapter = new ImageAdapter(MainActivity.this);
 
 
         movieList = new ArrayList<HashMap<String, String>>();
 
-        new GetMovies().execute();
+        if (isNetworkOnline()) {
+            new GetMovies().execute();
+        } else {
+            Toast.makeText(MainActivity.this, "Check Netwrok Connection and try again!",
+                    Toast.LENGTH_SHORT).show();
+        }
+
         gridview = (GridView) findViewById(R.id.gridview);
 
 
@@ -71,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
                                     int position, long id) {
                 Toast.makeText(MainActivity.this, "" + movieList.get(position).get(TAG_NAME),
                         Toast.LENGTH_SHORT).show();
+                showDeatils(position);
             }
         });
 
@@ -96,19 +113,49 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
 
 
+            case R.id.refresh:
+
+                if (isNetworkOnline()) {
+                    new GetMovies().execute();
+                } else {
+                    Toast.makeText(MainActivity.this, "Check Netwrok Connection and try again!",
+                            Toast.LENGTH_SHORT).show();
+                }
+
+                break;
 
             case R.id.menuSortNewest:
 
+                movies = null;
                 movieList.clear();
+
+
                 url = urlPopular;
-                new GetMovies().execute();
+                if (isNetworkOnline()) {
+
+                    new GetMovies().execute();
+                    bar.setTitle("Most Popular");
+                } else {
+                    Toast.makeText(MainActivity.this, "Check Netwrok Connection and try again!",
+                            Toast.LENGTH_SHORT).show();
+                }
 
                 break;
 
             case R.id.menuSortRating:
+                movies = null;
                 movieList.clear();
+
+
                 url = urlRating;
-                new GetMovies().execute();
+                if (isNetworkOnline()) {
+
+                    new GetMovies().execute();
+                    bar.setTitle("Highest Rated");
+                } else {
+                    Toast.makeText(MainActivity.this, "Check Netwrok Connection and try again!",
+                            Toast.LENGTH_SHORT).show();
+                }
 
                 break;
         }
@@ -117,6 +164,53 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    public boolean isNetworkOnline() {
+        boolean status = false;
+        try {
+            ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo netInfo = cm.getNetworkInfo(0);
+            if (netInfo != null && netInfo.getState() == NetworkInfo.State.CONNECTED) {
+                status = true;
+            } else {
+                netInfo = cm.getNetworkInfo(1);
+                if (netInfo != null && netInfo.getState() == NetworkInfo.State.CONNECTED)
+                    status = true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return status;
+
+    }
+
+    public void showDeatils(int position) {
+
+        final Dialog dialog = new Dialog(this);
+
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.getWindow().setBackgroundDrawableResource(
+                android.R.color.transparent);
+
+        dialog.setContentView(R.layout.movie_detail);
+        dialog.setCancelable(true);
+        dialog.setCanceledOnTouchOutside(true);
+
+
+        TextView tvTitle = (TextView) dialog.findViewById(R.id.tvTitle);
+        ImageView ivPoster = (ImageView) dialog.findViewById(R.id.ivPoster);
+        TextView tvDesc = (TextView) dialog.findViewById(R.id.tvDesc);
+        TextView tvRating = (TextView) dialog.findViewById(R.id.tvRating);
+        TextView tvDate = (TextView) dialog.findViewById(R.id.tvDate);
+
+        tvTitle.setText(movieList.get(position).get(TAG_NAME));
+        ivPoster.setImageBitmap(imgs[position]);
+        tvDesc.setText(movieList.get(position).get(TAG_DESCRIPTION));
+        tvRating.setText(movieList.get(position).get(TAG_RATING));
+        tvDate.setText(movieList.get(position).get(TAG_DATE));
+
+        dialog.show();
+    }
 
     public class ImageAdapter extends BaseAdapter {
         private Context mContext;
@@ -151,7 +245,7 @@ public class MainActivity extends AppCompatActivity {
                 text.setText("Test");
 
                  imageView = (ImageView) view.findViewById(R.id.ivGrid);
-                imageView.setLayoutParams(new GridView.LayoutParams(400, 500));
+                //imageView.setLayoutParams(new GridView.LayoutParams(300, 300));
                 imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
                 imageView.setPadding(8, 8, 8, 8);
@@ -223,15 +317,20 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(String... arg0) {
             // TODO Auto-generated method stub
-            for (int i = 0; i < 10; i++) {
+
+
+            imgs = new Bitmap[movies.length()];
+
+            for (int i = 0; i < movies.length(); i++) {
 
                 try {
-                    imgs[i] = Picasso.with(getApplicationContext()).load("http://image.tmdb.org/t/p/w185/" + movieList.get(i).get(TAG_THUMBNAIL)).get();
+                    imgs[i] = Picasso.with(getApplicationContext()).load("http://image.tmdb.org/t/p/w342/" + movieList.get(i).get(TAG_THUMBNAIL)).placeholder(R.drawable.default_placeholder).get();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
-            }
+                }
+
 
             return null;
         }
@@ -243,11 +342,14 @@ public class MainActivity extends AppCompatActivity {
             // adapter.notifyDataSetChanged();
 
 
+            pd.dismiss();
+
+
             //gridview.invalidateViews();
             gridview.setAdapter(adapter);
             gridview.invalidateViews();
 
-            pd.dismiss();
+
 
         }
     }
@@ -259,7 +361,7 @@ public class MainActivity extends AppCompatActivity {
             super.onPreExecute();
             // Showing progress dialog
             pd = new ProgressDialog(MainActivity.this);
-            pd.setMessage("Please wait...");
+            pd.setMessage("Connecting to server...");
             pd.setCancelable(false);
             pd.show();
 
@@ -294,6 +396,7 @@ public class MainActivity extends AppCompatActivity {
                         String thumb = c.getString(TAG_THUMBNAIL);
                         String pouplarity = c.getString(TAG_POPULARITY);
                         String rating = c.getString(TAG_RATING);
+                        String date = c.getString(TAG_DATE);
 
                         // tmp hashmap for single movie
                         HashMap<String, String> movie = new HashMap<String, String>();
@@ -305,6 +408,7 @@ public class MainActivity extends AppCompatActivity {
                         movie.put(TAG_THUMBNAIL, thumb);
                         movie.put(TAG_POPULARITY, pouplarity);
                         movie.put(TAG_RATING, rating);
+                        movie.put(TAG_DATE, date);
 
 
                         // adding movie to movie list
