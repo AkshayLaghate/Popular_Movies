@@ -200,6 +200,7 @@ public class MainActivity extends AppCompatActivity {
                 android.R.color.transparent);
 
         dialog.setContentView(R.layout.movie_detail);
+
         dialog.setCancelable(true);
         dialog.setCanceledOnTouchOutside(true);
 
@@ -390,6 +391,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
 
 }
 
