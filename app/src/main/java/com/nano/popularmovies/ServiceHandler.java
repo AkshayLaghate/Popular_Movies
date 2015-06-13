@@ -1,8 +1,5 @@
 package com.nano.popularmovies;
 
-/**
- * Created by Akki on 10/06/15.
- */
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;

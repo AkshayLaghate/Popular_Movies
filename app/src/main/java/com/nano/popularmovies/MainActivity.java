@@ -1,6 +1,5 @@
 package com.nano.popularmovies;
 
-
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -11,6 +10,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -36,7 +36,6 @@ import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
 
-
     // JSON Node names
     private static final String TAG_RESULTS = "results";
     private static final String TAG_ID = "id";
@@ -57,12 +56,18 @@ public class MainActivity extends AppCompatActivity {
     // Hashmap for ListView
     ArrayList<HashMap<String, String>> movieList;
     ActionBar bar;
+    DisplayMetrics metrics;
+    int height, width;
     private String url = urlPopular;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        metrics = this.getResources().getDisplayMetrics();
+        width = metrics.widthPixels;
+        height = metrics.heightPixels;
 
 
         bar = getSupportActionBar();
@@ -85,9 +90,8 @@ public class MainActivity extends AppCompatActivity {
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v,
                                     int position, long id) {
-                Toast.makeText(MainActivity.this, "" + movieList.get(position).get(TAG_NAME),
-                        Toast.LENGTH_SHORT).show();
-                showDeatils(position);
+
+                showDetails(position);
             }
         });
 
@@ -99,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+
         return true;
     }
 
@@ -164,6 +169,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    // Check if network connection is available
     public boolean isNetworkOnline() {
         boolean status = false;
         try {
@@ -184,7 +190,8 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void showDeatils(int position) {
+    // Show movie details when thumbnail is clicked
+    public void showDetails(int position) {
 
         final Dialog dialog = new Dialog(this);
 
@@ -205,13 +212,14 @@ public class MainActivity extends AppCompatActivity {
 
         tvTitle.setText(movieList.get(position).get(TAG_NAME));
         ivPoster.setImageBitmap(imgs[position]);
-        tvDesc.setText(movieList.get(position).get(TAG_DESCRIPTION));
-        tvRating.setText(movieList.get(position).get(TAG_RATING));
-        tvDate.setText(movieList.get(position).get(TAG_DATE));
+        tvDesc.setText("Description :" + '\n' + movieList.get(position).get(TAG_DESCRIPTION));
+        tvRating.setText("Rating : " + movieList.get(position).get(TAG_RATING) + "/10");
+        tvDate.setText("Release Date : " + movieList.get(position).get(TAG_DATE));
 
         dialog.show();
     }
 
+    // Adapter for gridview
     public class ImageAdapter extends BaseAdapter {
         private Context mContext;
         // references to our images
@@ -235,82 +243,36 @@ public class MainActivity extends AppCompatActivity {
 
         // create a new ImageView for each item referenced by the Adapter
         public View getView(int position, View convertView, ViewGroup parent) {
+
+
             ImageView imageView;
-            View view = null;
             if (convertView == null) {
                 // if it's not recycled, initialize some attributes
-
-                 view = getLayoutInflater().inflate(R.layout.grid_item, null);
-                TextView text = (TextView) view.findViewById(R.id.tvGrid);
-                text.setText("Test");
-
-                 imageView = (ImageView) view.findViewById(R.id.ivGrid);
-                //imageView.setLayoutParams(new GridView.LayoutParams(300, 300));
+                imageView = new ImageView(mContext);
+                imageView.setLayoutParams(new GridView.LayoutParams(width / 2, height / 2));
                 imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-
                 imageView.setPadding(8, 8, 8, 8);
             } else {
                 imageView = (ImageView) convertView;
             }
 
-           // imageView.setImageResource(mThumbIds[position]);
             imageView.setImageBitmap(imgs[position]);
             return imageView;
-/*
-            LayoutInflater inflater = (LayoutInflater) mContext
-                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-            View gridView;
-
-            if (convertView == null) {
-
-                gridView = new View(mContext);
-
-                // get layout from mobile.xml
-                gridView = inflater.inflate(R.layout.grid_item, null);
-
-                // set image based on selected text
-                ImageView imageView = (ImageView) gridView
-                        .findViewById(R.id.ivGrid);
 
 
-                imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-
-                imageView.setPadding(8, 8, 8, 8);
-
-                TextView tvGrid = (TextView) gridView.findViewById(R.id.tvGrid);
-                tvGrid.setText( (position + 1)+". "+movieList.get(position).get(TAG_NAME));
-
-
-                imageView.setImageBitmap(imgs[position]);
-
-
-            } else {
-                gridView = convertView;
-            }
-
-            return gridView;*/
         }
 
 
     }
 
+    // Load movie posters in background thread
     class LoadImgs extends AsyncTask<String, String, String> {
-
-
         @Override
         protected void onPreExecute() {
             // TODO Auto-generated method stub
-
             super.onPreExecute();
 
-            pd = new ProgressDialog(MainActivity.this);
-            pd.setMessage("Loading Movies Info..");
-            pd.setCanceledOnTouchOutside(false);
-            pd.setIndeterminate(false);
-            pd.show();
-
-
+            pd.setMessage("Loading Movies Info....");
 
         }
 
@@ -318,19 +280,17 @@ public class MainActivity extends AppCompatActivity {
         protected String doInBackground(String... arg0) {
             // TODO Auto-generated method stub
 
-
             imgs = new Bitmap[movies.length()];
 
             for (int i = 0; i < movies.length(); i++) {
 
                 try {
-                    imgs[i] = Picasso.with(getApplicationContext()).load("http://image.tmdb.org/t/p/w342/" + movieList.get(i).get(TAG_THUMBNAIL)).placeholder(R.drawable.default_placeholder).get();
+                    imgs[i] = Picasso.with(getApplicationContext()).load("http://image.tmdb.org/t/p/w185/" + movieList.get(i).get(TAG_THUMBNAIL)).placeholder(R.drawable.default_placeholder).get();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
-                }
-
+            }
 
             return null;
         }
@@ -339,21 +299,14 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(String result) {
             // TODO Auto-generated method stub
 
-            // adapter.notifyDataSetChanged();
-
-
             pd.dismiss();
-
-
-            //gridview.invalidateViews();
             gridview.setAdapter(adapter);
             gridview.invalidateViews();
-
-
 
         }
     }
 
+    // Make api call to tMDB and get JSON data in background thread
     private class GetMovies extends AsyncTask<Void, Void, Void> {
 
         @Override
@@ -384,13 +337,12 @@ public class MainActivity extends AppCompatActivity {
                     // Getting JSON Array node
                     movies = jsonObj.getJSONArray(TAG_RESULTS);
 
-                    // looping through All Contacts
+                    // looping through all results
                     for (int i = 0; i < movies.length(); i++) {
                         JSONObject c = movies.getJSONObject(i);
 
                         String id = c.getString(TAG_ID);
                         String name = c.getString(TAG_NAME);
-
 
                         String desc = c.getString(TAG_DESCRIPTION);
                         String thumb = c.getString(TAG_THUMBNAIL);
@@ -428,8 +380,7 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
             // Dismiss the progress dialog
-            if (pd.isShowing())
-                pd.dismiss();
+
             /**
              * Updating parsed JSON data into ListView
              * */

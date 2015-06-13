@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="340dp"
-    android:layout_height="500dp"
+    android:layout_width="500dp"
+    android:layout_height="800dp"
     android:background="@android:color/white"
     android:orientation="vertical">
 
@@ -14,6 +14,7 @@
         android:text="Movie Name"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@android:color/black"
+        android:textSize="25sp"
         android:textStyle="bold" />
 
     <ScrollView
@@ -29,8 +30,8 @@
 
             <ImageView
                 android:id="@+id/ivPoster"
-                android:layout_width="220dp"
-                android:layout_height="260dp"
+                android:layout_width="300dp"
+                android:layout_height="400dp"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="10dp" />
 
@@ -42,7 +43,8 @@
                 android:layout_marginTop="5dp"
                 android:text="Medium Text"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textColor="@android:color/black" />
+                android:textColor="@android:color/black"
+                android:textSize="20sp" />
 
             <TextView
                 android:id="@+id/tvDate"
@@ -52,7 +54,8 @@
                 android:layout_marginTop="10dp"
                 android:text="Medium Text"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textColor="@android:color/black" />
+                android:textColor="@android:color/black"
+                android:textSize="20sp" />
 
             <TextView
                 android:id="@+id/tvDesc"
@@ -63,7 +66,8 @@
                 android:gravity="left"
                 android:text="Medium Text"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textColor="@android:color/black" />
+                android:textColor="@android:color/black"
+                android:textSize="20sp" />
         </LinearLayout>
     </ScrollView>
 
