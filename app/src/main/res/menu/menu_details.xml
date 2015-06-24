@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".DetailsActivity">
+
+
+    <item
+        android:id="@+id/addToFav"
+        android:orderInCategory="10"
+        android:title="@string/action_fav"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/searchYTS"
+        android:orderInCategory="20"
+        android:title="Search torrent Yify"
+        app:showAsAction="never" />
+
+
+</menu>

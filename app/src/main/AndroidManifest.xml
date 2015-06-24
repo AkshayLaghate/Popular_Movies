@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.nano.popularmovies" >
+    package="com.nano.popularmovies">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme">
+        android:theme="@style/CustomActionBarTheme">
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize"
@@ -19,6 +20,23 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".DetailsActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/app_name"
+            android:parentActivityName=".MainActivity">
+
+
+            <intent-filter>
+                <action android:name="com.nano.popularmovies.DETAILS" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <provider
+            android:name="MovieProvider"
+            android:authorities="com.nano.provider.popularmovies"></provider>
     </application>
 
 </manifest>

@@ -1,11 +1,14 @@
 package com.nano.popularmovies;
 
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.content.res.Configuration;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
@@ -16,12 +19,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
@@ -39,12 +40,14 @@ public class MainActivity extends AppCompatActivity {
     // JSON Node names
     private static final String TAG_RESULTS = "results";
     private static final String TAG_ID = "id";
+
     private static final String TAG_NAME = "original_title";
     private static final String TAG_DESCRIPTION = "overview";
     private static final String TAG_THUMBNAIL = "poster_path";
     private static final String TAG_POPULARITY = "popularity";
     private static final String TAG_RATING = "vote_average";
     private static final String TAG_DATE = "release_date";
+    static int index;
     private static String urlPopular = "http://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&api_key=3545a57a2f23dac5f3a1a0ddb84aa0df";
     private static String urlRating = "http://api.themoviedb.org/3/discover/movie?sort_by=vote_average.desc&api_key=3545a57a2f23dac5f3a1a0ddb84aa0df";
     Bitmap[] imgs;
@@ -58,6 +61,12 @@ public class MainActivity extends AppCompatActivity {
     ActionBar bar;
     DisplayMetrics metrics;
     int height, width;
+    Configuration config;
+
+
+    TinyDB tiny;
+
+    ArrayList<byte[]> poster_list;
     private String url = urlPopular;
 
     @Override
@@ -74,27 +83,60 @@ public class MainActivity extends AppCompatActivity {
         bar.setTitle("Most Popular");
         adapter = new ImageAdapter(MainActivity.this);
 
+        pd = new ProgressDialog(MainActivity.this);
+
+        pd.setCancelable(false);
+
 
         movieList = new ArrayList<HashMap<String, String>>();
+
+        poster_list = new ArrayList<>();
 
         if (isNetworkOnline()) {
             new GetMovies().execute();
         } else {
-            Toast.makeText(MainActivity.this, "Check Netwrok Connection and try again!",
+            Toast.makeText(MainActivity.this, "Check Network Connection and try again!",
                     Toast.LENGTH_SHORT).show();
         }
 
         gridview = (GridView) findViewById(R.id.gridview);
 
+        config = getResources().getConfiguration();
+        if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+
+            gridview.setNumColumns(4);
+        } else {
+
+            gridview.setNumColumns(2);
+        }
 
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v,
                                     int position, long id) {
 
-                showDetails(position);
+                //showDetails(position);
+                openDetails(position);
             }
         });
 
+
+    }
+
+    private void openDetails(int position) {
+
+        Bundle bag = new Bundle();
+        bag.putString("movie_id", movieList.get(position).get(TAG_ID));
+        bag.putString("movie_title", movieList.get(position).get(TAG_NAME));
+        bag.putString("movie_desc", movieList.get(position).get(TAG_DESCRIPTION));
+        bag.putString("movie_release", movieList.get(position).get(TAG_DATE));
+        bag.putString("movie_rating", movieList.get(position).get(TAG_RATING));
+        bag.putString("poster_path", movieList.get(position).get(TAG_THUMBNAIL));
+
+        Intent i = new Intent("com.nano.popularmovies.DETAILS");
+
+        i.putExtras(bag);
+
+        startActivity(i);
 
     }
 
@@ -123,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
                 if (isNetworkOnline()) {
                     new GetMovies().execute();
                 } else {
-                    Toast.makeText(MainActivity.this, "Check Netwrok Connection and try again!",
+                    Toast.makeText(MainActivity.this, "Check Network Connection and try again!",
                             Toast.LENGTH_SHORT).show();
                 }
 
@@ -141,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
                     new GetMovies().execute();
                     bar.setTitle("Most Popular");
                 } else {
-                    Toast.makeText(MainActivity.this, "Check Netwrok Connection and try again!",
+                    Toast.makeText(MainActivity.this, "Check Network Connection and try again!",
                             Toast.LENGTH_SHORT).show();
                 }
 
@@ -158,10 +200,19 @@ public class MainActivity extends AppCompatActivity {
                     new GetMovies().execute();
                     bar.setTitle("Highest Rated");
                 } else {
-                    Toast.makeText(MainActivity.this, "Check Netwrok Connection and try again!",
+                    Toast.makeText(MainActivity.this, "Check Network Connection and try again!",
                             Toast.LENGTH_SHORT).show();
                 }
 
+                break;
+
+            case R.id.menuSortFav:
+
+                imgs = null;
+                movieList.clear();
+
+                new LoadFavs().execute();
+                bar.setTitle("Favourites");
                 break;
         }
 
@@ -190,34 +241,50 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    // Show movie details when thumbnail is clicked
-    public void showDetails(int position) {
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
 
-        final Dialog dialog = new Dialog(this);
+        gridview.setVisibility(View.INVISIBLE);
 
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.getWindow().setBackgroundDrawableResource(
-                android.R.color.transparent);
+        width = metrics.widthPixels;
+        height = metrics.heightPixels;
 
-        dialog.setContentView(R.layout.movie_detail);
-
-        dialog.setCancelable(true);
-        dialog.setCanceledOnTouchOutside(true);
+        // Checks the orientation of the screen
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
 
 
-        TextView tvTitle = (TextView) dialog.findViewById(R.id.tvTitle);
-        ImageView ivPoster = (ImageView) dialog.findViewById(R.id.ivPoster);
-        TextView tvDesc = (TextView) dialog.findViewById(R.id.tvDesc);
-        TextView tvRating = (TextView) dialog.findViewById(R.id.tvRating);
-        TextView tvDate = (TextView) dialog.findViewById(R.id.tvDate);
+            gridview.setNumColumns(4);
+            if (isNetworkOnline()) {
+                new GetMovies().execute();
+            } else {
+                Toast.makeText(MainActivity.this, "Check Network Connection and try again!",
+                        Toast.LENGTH_SHORT).show();
+            }
+        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
 
-        tvTitle.setText(movieList.get(position).get(TAG_NAME));
-        ivPoster.setImageBitmap(imgs[position]);
-        tvDesc.setText("Description :" + '\n' + movieList.get(position).get(TAG_DESCRIPTION));
-        tvRating.setText("Rating : " + movieList.get(position).get(TAG_RATING) + "/10");
-        tvDate.setText("Release Date : " + movieList.get(position).get(TAG_DATE));
 
-        dialog.show();
+            gridview.setNumColumns(2);
+            if (isNetworkOnline()) {
+                new GetMovies().execute();
+            } else {
+                Toast.makeText(MainActivity.this, "Check Network Connection and try again!",
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    @Override
+    public void onResume(){
+
+        gridview.setSelection(index);
+        super.onResume();
+    }
+
+    @Override
+    public void onPause(){
+        index = gridview.getFirstVisiblePosition();
+        super.onPause();
     }
 
     // Adapter for gridview
@@ -247,11 +314,13 @@ public class MainActivity extends AppCompatActivity {
 
 
             ImageView imageView;
+
             if (convertView == null) {
                 // if it's not recycled, initialize some attributes
                 imageView = new ImageView(mContext);
+
                 imageView.setLayoutParams(new GridView.LayoutParams(width / 2, height / 2));
-                imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
                 imageView.setPadding(8, 8, 8, 8);
             } else {
                 imageView = (ImageView) convertView;
@@ -303,6 +372,7 @@ public class MainActivity extends AppCompatActivity {
             pd.dismiss();
             gridview.setAdapter(adapter);
             gridview.invalidateViews();
+            gridview.setVisibility(View.VISIBLE);
 
         }
     }
@@ -314,9 +384,7 @@ public class MainActivity extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
             // Showing progress dialog
-            pd = new ProgressDialog(MainActivity.this);
-            pd.setMessage("Connecting to server...");
-            pd.setCancelable(false);
+            pd.setMessage("Contacting server...");
             pd.show();
 
         }
@@ -392,6 +460,71 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private class LoadFavs extends AsyncTask<Void, Void, Void> {
+
+
+        @Override
+        protected void onPreExecute() {
+            // TODO Auto-generated method stub
+            super.onPreExecute();
+            tiny = new TinyDB(MainActivity.this);
+            pd.setMessage("Loading Movies Info....");
+
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            // Retrieve student records
+            String URL = "content://com.nano.provider.popularmovies/movies";
+
+            Uri movies = Uri.parse(URL);
+            Cursor c = getContentResolver().query(movies, null, null, null, "name");
+            ArrayList<byte[]> thumbList = new ArrayList<>();
+
+            if (c.moveToFirst()) {
+                do {
+
+
+                    HashMap<String, String> movie = new HashMap<>();
+                    movie.put(TAG_ID, c.getString(c.getColumnIndex(MovieProvider.ID)));
+                    movie.put(TAG_NAME, c.getString(c.getColumnIndex(MovieProvider.NAME)));
+                    movie.put(TAG_DESCRIPTION, c.getString(c.getColumnIndex(MovieProvider.DESCRIPTION)));
+
+
+                    movie.put(TAG_RATING, c.getString(c.getColumnIndex(MovieProvider.RATING)));
+                    movie.put(TAG_DATE, c.getString(c.getColumnIndex(MovieProvider.DATE)));
+
+
+                    // adding movie to movie list
+                    movieList.add(movie);
+                    thumbList.add(c.getBlob(7));
+
+
+                } while (c.moveToNext());
+            }
+
+            imgs = new Bitmap[movieList.size()];
+            for (int i = 0; i < movieList.size(); i++) {
+                imgs[i] = DBBitmapUtility.getImage(thumbList.get(i));
+            }
+
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            pd.dismiss();
+
+            pd.dismiss();
+            gridview.setAdapter(adapter);
+            gridview.invalidateViews();
+            gridview.setVisibility(View.VISIBLE);
+
+        }
+
+
+    }
 
 }
 

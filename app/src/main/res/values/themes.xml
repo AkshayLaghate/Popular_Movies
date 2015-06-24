@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+    <!-- the theme applied to the application or activity -->
+    <style name="CustomActionBarTheme" parent="@style/Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:actionBarStyle" tools:ignore="NewApi">@style/MyActionBar</item>
+        <item name="actionBarStyle">@style/MyActionBar</item>
+    </style>
+
+    <!-- ActionBar styles -->
+    <style name="MyActionBar" parent="@style/Widget.AppCompat.Light.ActionBar.Solid.Inverse">
+
+        <item name="android:background" tools:ignore="NewApi">@color/teal_900</item>
+        <item name="background">@color/teal_900</item>
+
+
+    </style>
+</resources>
