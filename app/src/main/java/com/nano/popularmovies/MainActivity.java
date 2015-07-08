@@ -6,25 +6,28 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.GridView;
-import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.etsy.android.grid.StaggeredGridView;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -34,6 +37,11 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import it.gmariotti.cardslib.library.cards.material.MaterialLargeImageCard;
+import it.gmariotti.cardslib.library.internal.Card;
+import it.gmariotti.cardslib.library.view.CardViewNative;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -47,11 +55,14 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG_POPULARITY = "popularity";
     private static final String TAG_RATING = "vote_average";
     private static final String TAG_DATE = "release_date";
-    static int index;
+
     private static String urlPopular = "http://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&api_key=3545a57a2f23dac5f3a1a0ddb84aa0df";
     private static String urlRating = "http://api.themoviedb.org/3/discover/movie?sort_by=vote_average.desc&api_key=3545a57a2f23dac5f3a1a0ddb84aa0df";
     Bitmap[] imgs;
-    GridView gridview;
+
+
+    StaggeredGridView sgridView;
+
     ProgressDialog pd;
     ImageAdapter adapter;
     // contacts JSONArray
@@ -63,16 +74,19 @@ public class MainActivity extends AppCompatActivity {
     int height, width;
     Configuration config;
 
+    SwipeRefreshLayout swipe;
 
     TinyDB tiny;
 
     ArrayList<byte[]> poster_list;
+    ArrayList<Card> cards = new ArrayList<Card>();
     private String url = urlPopular;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         metrics = this.getResources().getDisplayMetrics();
         width = metrics.widthPixels;
@@ -87,10 +101,28 @@ public class MainActivity extends AppCompatActivity {
 
         pd.setCancelable(false);
 
+        sgridView = (StaggeredGridView) findViewById(R.id.grid_view);
+
 
         movieList = new ArrayList<HashMap<String, String>>();
 
         poster_list = new ArrayList<>();
+
+        swipe = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
+        swipe.setColorSchemeResources(R.color.teal_700, R.color.indigo_700);
+        swipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                if (isNetworkOnline()) {
+
+                    new GetMovies().execute();
+                } else {
+                    Toast.makeText(MainActivity.this, "Check Network Connection and try again!",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
 
         if (isNetworkOnline()) {
             new GetMovies().execute();
@@ -99,18 +131,22 @@ public class MainActivity extends AppCompatActivity {
                     Toast.LENGTH_SHORT).show();
         }
 
-        gridview = (GridView) findViewById(R.id.gridview);
+        //gridview = (GridView) findViewById(R.id.gridview);
+        //mGridView = (CardGridStaggeredView) findViewById(R.id.carddemo_extras_grid_stag);
 
-        config = getResources().getConfiguration();
+
+
+
+     /*   config = getResources().getConfiguration();
         if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
 
             gridview.setNumColumns(4);
         } else {
 
             gridview.setNumColumns(2);
-        }
+        }*/
 
-        gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        sgridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v,
                                     int position, long id) {
 
@@ -119,6 +155,20 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
+
+        /*gridview.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+
+
+            }
+        });*/
 
     }
 
@@ -173,6 +223,8 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.menuSortNewest:
 
+                item.setChecked(true);
+
                 movies = null;
                 movieList.clear();
 
@@ -185,11 +237,14 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     Toast.makeText(MainActivity.this, "Check Network Connection and try again!",
                             Toast.LENGTH_SHORT).show();
+
                 }
 
                 break;
 
             case R.id.menuSortRating:
+
+                item.setChecked(true);
                 movies = null;
                 movieList.clear();
 
@@ -207,6 +262,8 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.menuSortFav:
+
+                item.setChecked(true);
 
                 imgs = null;
                 movieList.clear();
@@ -241,7 +298,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    @Override
+    /*@Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
@@ -272,19 +329,21 @@ public class MainActivity extends AppCompatActivity {
                         Toast.LENGTH_SHORT).show();
             }
         }
-    }
+    }*/
 
     @Override
-    public void onResume(){
+    public void onResume() {
 
-        gridview.setSelection(index);
+        //sgridView.setSelection(index);
         super.onResume();
+
     }
 
     @Override
-    public void onPause(){
-        index = gridview.getFirstVisiblePosition();
+    public void onPause() {
+        // index = sgridView.getFirstVisiblePosition();
         super.onPause();
+
     }
 
     // Adapter for gridview
@@ -310,7 +369,54 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // create a new ImageView for each item referenced by the Adapter
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(final int position, View convertView, ViewGroup parent) {
+
+
+            convertView = null;
+
+
+            if (convertView == null) {
+                // if it's not recycled, initialize some attributes
+
+
+                LayoutInflater inflater = (LayoutInflater) getApplicationContext()
+                        .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                convertView = inflater.inflate(R.layout.cardlib_card, null);
+
+
+                // get layout from mobile.xml
+
+                //v.setLayoutParams(new GridView.LayoutParams(width / 2, height / 2));
+
+            }
+
+
+            CardViewNative cardView = (CardViewNative) convertView.findViewById(R.id.carddemo_largeimage);
+
+
+            MaterialLargeImageCard card =
+                    MaterialLargeImageCard.with(getApplicationContext())
+                            .setTitle(movieList.get(position).get(TAG_NAME))
+                            .setSubTitle("Rating : " + movieList.get(position).get(TAG_RATING) + "/10")
+                            .useDrawableExternal(new MaterialLargeImageCard.DrawableExternal() {
+                                @Override
+                                public void setupInnerViewElements(ViewGroup viewGroup, View mview) {
+
+                                    Drawable d = new BitmapDrawable(getResources(), imgs[position]);
+
+                                    mview.setBackground(d);
+                                }
+                            }).build();
+
+
+            cardView.setCard(card);
+
+            return convertView;
+
+
+        }
+
+        /*public View getView(int position, View convertView, ViewGroup parent) {
 
 
             ImageView imageView;
@@ -330,7 +436,7 @@ public class MainActivity extends AppCompatActivity {
             return imageView;
 
 
-        }
+        }*/
 
 
     }
@@ -342,7 +448,6 @@ public class MainActivity extends AppCompatActivity {
             // TODO Auto-generated method stub
             super.onPreExecute();
 
-            pd.setMessage("Loading Movies Info....");
 
         }
 
@@ -369,10 +474,13 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(String result) {
             // TODO Auto-generated method stub
 
-            pd.dismiss();
-            gridview.setAdapter(adapter);
-            gridview.invalidateViews();
-            gridview.setVisibility(View.VISIBLE);
+            swipe.setRefreshing(false);
+            sgridView.setAdapter(adapter);
+            sgridView.invalidateViews();
+            sgridView.setVisibility(View.VISIBLE);
+
+
+            //new LoadCards().execute();
 
         }
     }
@@ -384,8 +492,16 @@ public class MainActivity extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
             // Showing progress dialog
-            pd.setMessage("Contacting server...");
-            pd.show();
+
+            sgridView.setVisibility(View.INVISIBLE);
+            swipe.post(new Runnable() {
+                @Override
+                public void run() {
+                    swipe.setRefreshing(true);
+                }
+            });
+
+
 
         }
 
@@ -454,11 +570,69 @@ public class MainActivity extends AppCompatActivity {
              * Updating parsed JSON data into ListView
              * */
 
+
             new LoadImgs().execute();
 
         }
 
     }
+
+    private class LoadCards extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected void onPreExecute() {
+            // TODO Auto-generated method stub
+            super.onPreExecute();
+
+            pd.setMessage("Setting up the UI.....");
+
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            for (int i = 0; i < movieList.size(); i++) {
+
+                final int finalI = i;
+                MaterialLargeImageCard card =
+                        MaterialLargeImageCard.with(getApplicationContext())
+                                .setTitle(movieList.get(i).get(TAG_NAME).toString())
+                                .useDrawableExternal(new MaterialLargeImageCard.DrawableExternal() {
+                                    @Override
+                                    public void setupInnerViewElements(ViewGroup viewGroup, View mview) {
+
+                                        Drawable d = new BitmapDrawable(getResources(), imgs[finalI]);
+
+                                        mview.setBackground(d);
+                                    }
+                                }).build();
+
+                cards.add(card);
+            }
+
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+
+
+
+            /*gridview.setAdapter(adapter);
+            gridview.invalidateViews();
+            gridview.setVisibility(View.VISIBLE);
+
+
+*/
+            pd.dismiss();
+            sgridView.setAdapter(adapter);
+            sgridView.invalidateViews();
+            sgridView.setVisibility(View.VISIBLE);
+        }
+
+    }
+
 
     private class LoadFavs extends AsyncTask<Void, Void, Void> {
 
@@ -514,17 +688,18 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            pd.dismiss();
+
 
             pd.dismiss();
-            gridview.setAdapter(adapter);
-            gridview.invalidateViews();
-            gridview.setVisibility(View.VISIBLE);
+            sgridView.setAdapter(adapter);
+            sgridView.invalidateViews();
+            sgridView.setVisibility(View.VISIBLE);
 
         }
 
 
     }
+
 
 }
 

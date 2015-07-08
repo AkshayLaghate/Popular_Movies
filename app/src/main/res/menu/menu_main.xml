@@ -17,15 +17,20 @@
         app:showAsAction="always">
 
         <menu>
+            <group
+                android:id="@+id/group"
+                android:checkableBehavior="single">
             <item
                 android:id="@+id/menuSortNewest"
-                android:title="Sort by Most Popular" />
+                android:checked="true"
+                android:title="Most Popular" />
             <item
                 android:id="@+id/menuSortRating"
-                android:title="Sort by Highest Rated" />
+                android:title="Highest Rated" />
             <item
                 android:id="@+id/menuSortFav"
                 android:title="Favourites" />
+            </group>
         </menu>
     </item>
 </menu>

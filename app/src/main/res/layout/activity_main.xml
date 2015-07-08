@@ -1,10 +1,39 @@
-<GridView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/gridview"
+<android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/swipe_container"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/teal_400"
-    android:columnWidth="90dp"
-    android:gravity="center"
-    android:horizontalSpacing="5dp"
-    android:numColumns="2"
-    android:stretchMode="columnWidth" />
+    android:layout_height="match_parent">
+    <!--<GridView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/gridview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:columnWidth="90dp"
+        android:gravity="center"
+        android:horizontalSpacing="5dp"
+        android:numColumns="2"
+        android:stretchMode="columnWidth"
+        android:visibility="visible"
+        android:background="@color/blue_grey_200" />-->
+    <!--<it.gmariotti.cardslib.library.view.CardGridStaggeredView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        card:item_margin="8dp"
+        card:column_count_portrait="2"
+        card:column_count_landscape="3"
+        card:grid_paddingRight="8dp"
+        card:grid_paddingLeft="8dp"
+        card:list_card_layout_resourceID="@layout/cardlib_card"
+        android:id="@+id/carddemo_extras_grid_stag"/>-->
+
+
+    <com.etsy.android.grid.StaggeredGridView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/grid_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        app:column_count_landscape="3"
+        app:column_count_portrait="2"
+        app:item_margin="8dp" />
+
+
+</android.support.v4.widget.SwipeRefreshLayout>

@@ -7,6 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -20,6 +22,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,15 +47,17 @@ public class DetailsActivity extends AppCompatActivity {
     private static final String TAG_AUTHOR = "author";
     private static final String TAG_CONTENT = "content";
     ActionBar bar;
+    ScrollView scrollView;
     String movie_id, name, description, date, rating, poster_path, review;
     ImageView ivPoster, ivTeaser, ivTrailer;
     TextView tvTitle, tvDesc, tvDate, tvRating, tvReview, tvTrailer, tvTeaser;
     JSONArray dataArray = null;
     ArrayList<String> posterList, favMovies;
     ArrayList<HashMap<String, String>> reviews, videos;
+    Drawable poster_bg_drawable;
 
 
-    Bitmap poster;
+    Bitmap poster, poster_bg;
     Bitmap thumb;
 
     TinyDB tiny;
@@ -102,6 +107,7 @@ public class DetailsActivity extends AppCompatActivity {
 
         isFav = checkFav();
 
+        scrollView = (ScrollView) findViewById(R.id.scrollView);
         ivPoster = (ImageView) findViewById(R.id.ivPosterDetails);
 
         ivTeaser = (ImageView) findViewById(R.id.ivTeaser);
@@ -340,6 +346,7 @@ public class DetailsActivity extends AppCompatActivity {
                     try {
 
                         poster = Picasso.with(getApplicationContext()).load("http://image.tmdb.org/t/p/w342/" + posterList.get(0)).placeholder(R.drawable.default_placeholder).get();
+                        poster_bg = Picasso.with(getApplicationContext()).load("http://image.tmdb.org/t/p/w342/" + posterList.get(1)).placeholder(R.drawable.default_placeholder).get();
                         thumb = Picasso.with(getApplicationContext()).load("http://image.tmdb.org/t/p/w342/" + poster_path).placeholder(R.drawable.default_placeholder).get();
 
                     } catch (Exception e) {
@@ -373,6 +380,9 @@ public class DetailsActivity extends AppCompatActivity {
 
             ivPoster.setScaleType(ImageView.ScaleType.FIT_CENTER);
             ivPoster.setImageBitmap(poster);
+            poster_bg_drawable = new BitmapDrawable(getResources(), poster_bg);
+            //scrollView.setBackground(poster_bg_drawable);
+
 
 
         }
