@@ -3,7 +3,6 @@ package com.nano.popularmovies;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -28,15 +27,20 @@ import android.widget.BaseAdapter;
 import android.widget.Toast;
 
 import com.etsy.android.grid.StaggeredGridView;
+import com.nano.popularmovies.Utils.DBBitmapUtility;
+import com.nano.popularmovies.Utils.MovieData;
+import com.nano.popularmovies.Utils.MovieProvider;
+import com.nano.popularmovies.Utils.Result;
+import com.nano.popularmovies.Utils.ServiceApi;
+import com.nano.popularmovies.Utils.TinyDB;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import it.gmariotti.cardslib.library.cards.material.MaterialLargeImageCard;
 import it.gmariotti.cardslib.library.internal.Card;
@@ -46,7 +50,7 @@ import it.gmariotti.cardslib.library.view.CardViewNative;
 public class MainActivity extends AppCompatActivity {
 
     // JSON Node names
-    private static final String TAG_RESULTS = "results";
+
     private static final String TAG_ID = "id";
 
     private static final String TAG_NAME = "original_title";
@@ -56,8 +60,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG_RATING = "vote_average";
     private static final String TAG_DATE = "release_date";
 
-    private static String urlPopular = "http://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&api_key=3545a57a2f23dac5f3a1a0ddb84aa0df";
-    private static String urlRating = "http://api.themoviedb.org/3/discover/movie?sort_by=vote_average.desc&api_key=3545a57a2f23dac5f3a1a0ddb84aa0df";
+
     Bitmap[] imgs;
 
 
@@ -72,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
     ActionBar bar;
     DisplayMetrics metrics;
     int height, width;
-    Configuration config;
+
 
     SwipeRefreshLayout swipe;
 
@@ -80,7 +83,13 @@ public class MainActivity extends AppCompatActivity {
 
     ArrayList<byte[]> poster_list;
     ArrayList<Card> cards = new ArrayList<Card>();
-    private String url = urlPopular;
+
+
+    List<Result> results;
+    String query_Rating = "vote_average.desc";
+    String query_Popular = "popularity.desc";
+    String query = query_Popular;
+    private String api_key = "3545a57a2f23dac5f3a1a0ddb84aa0df";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
             public void onRefresh() {
                 if (isNetworkOnline()) {
 
-                    new GetMovies().execute();
+                    new GetMovies().execute(query);
                 } else {
                     Toast.makeText(MainActivity.this, "Check Network Connection and try again!",
                             Toast.LENGTH_SHORT).show();
@@ -125,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         if (isNetworkOnline()) {
-            new GetMovies().execute();
+            new GetMovies().execute(query_Popular);
         } else {
             Toast.makeText(MainActivity.this, "Check Network Connection and try again!",
                     Toast.LENGTH_SHORT).show();
@@ -213,7 +222,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.refresh:
 
                 if (isNetworkOnline()) {
-                    new GetMovies().execute();
+                    new GetMovies().execute(query);
                 } else {
                     Toast.makeText(MainActivity.this, "Check Network Connection and try again!",
                             Toast.LENGTH_SHORT).show();
@@ -228,11 +237,11 @@ public class MainActivity extends AppCompatActivity {
                 movies = null;
                 movieList.clear();
 
+                query = query_Popular;
 
-                url = urlPopular;
                 if (isNetworkOnline()) {
 
-                    new GetMovies().execute();
+                    new GetMovies().execute(query_Popular);
                     bar.setTitle("Most Popular");
                 } else {
                     Toast.makeText(MainActivity.this, "Check Network Connection and try again!",
@@ -248,11 +257,11 @@ public class MainActivity extends AppCompatActivity {
                 movies = null;
                 movieList.clear();
 
+                query = query_Rating;
 
-                url = urlRating;
                 if (isNetworkOnline()) {
 
-                    new GetMovies().execute();
+                    new GetMovies().execute(query_Rating);
                     bar.setTitle("Highest Rated");
                 } else {
                     Toast.makeText(MainActivity.this, "Check Network Connection and try again!",
@@ -455,13 +464,16 @@ public class MainActivity extends AppCompatActivity {
         protected String doInBackground(String... arg0) {
             // TODO Auto-generated method stub
 
-            imgs = new Bitmap[movies.length()];
+            imgs = new Bitmap[movieList.size()];
 
-            for (int i = 0; i < movies.length(); i++) {
+            for (int i = 0; i < movieList.size(); i++) {
 
                 try {
+                    Log.d("poster is", "posterid=" + movieList.get(i).get(TAG_THUMBNAIL));
                     imgs[i] = Picasso.with(getApplicationContext()).load("http://image.tmdb.org/t/p/w185/" + movieList.get(i).get(TAG_THUMBNAIL)).placeholder(R.drawable.default_placeholder).get();
+
                 } catch (IOException e) {
+
                     e.printStackTrace();
                 }
 
@@ -486,7 +498,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Make api call to tMDB and get JSON data in background thread
-    private class GetMovies extends AsyncTask<Void, Void, Void> {
+    private class GetMovies extends AsyncTask<String, Void, Void> {
+
+
 
         @Override
         protected void onPreExecute() {
@@ -502,61 +516,56 @@ public class MainActivity extends AppCompatActivity {
             });
 
 
-
         }
 
         @Override
-        protected Void doInBackground(Void... arg0) {
+        protected Void doInBackground(String... params) {
             // Creating service handler class instance
-            ServiceHandler sh = new ServiceHandler();
+            /*ServiceHandler sh = new ServiceHandler();
 
             // Making a request to url and getting response
             String jsonStr = sh.makeServiceCall(url, ServiceHandler.GET);
 
-            Log.d("Response: ", "> " + jsonStr);
+            Log.d("Response: ", "> " + jsonStr);*/
 
-            if (jsonStr != null) {
-                try {
-                    JSONObject jsonObj = new JSONObject(jsonStr);
+            /*OkHttpClient client = new OkHttpClient();
+            Request request = new Request.Builder()
+                    .url(url)
+                    .build();
+            String jsonStr = null;
 
-                    // Getting JSON Array node
-                    movies = jsonObj.getJSONArray(TAG_RESULTS);
-
-                    // looping through all results
-                    for (int i = 0; i < movies.length(); i++) {
-                        JSONObject c = movies.getJSONObject(i);
-
-                        String id = c.getString(TAG_ID);
-                        String name = c.getString(TAG_NAME);
-
-                        String desc = c.getString(TAG_DESCRIPTION);
-                        String thumb = c.getString(TAG_THUMBNAIL);
-                        String pouplarity = c.getString(TAG_POPULARITY);
-                        String rating = c.getString(TAG_RATING);
-                        String date = c.getString(TAG_DATE);
-
-                        // tmp hashmap for single movie
-                        HashMap<String, String> movie = new HashMap<String, String>();
-
-                        // adding each child node to HashMap key => value
-                        movie.put(TAG_ID, id);
-                        movie.put(TAG_NAME, name);
-                        movie.put(TAG_DESCRIPTION, desc);
-                        movie.put(TAG_THUMBNAIL, thumb);
-                        movie.put(TAG_POPULARITY, pouplarity);
-                        movie.put(TAG_RATING, rating);
-                        movie.put(TAG_DATE, date);
+            try {
+                Response response = client.newCall(request).execute();
+                jsonStr = response.body().toString();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }*/
 
 
-                        // adding movie to movie list
-                        movieList.add(movie);
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                Log.e("ServiceHandler", "Couldn't get any data from the url");
+            final String[] jsonStr = {null};
+            MovieData md = ServiceApi.getTMDBService().listMovies(params[0], api_key);
+            results = md.getResults();
+
+            for (int i = 0; i < results.size(); i++) {
+
+
+                // tmp hashmap for single movie
+                HashMap<String, String> movie = new HashMap<String, String>();
+
+                // adding each child node to HashMap key => value
+                movie.put(TAG_ID, String.valueOf(results.get(i).getId()));
+                movie.put(TAG_NAME, results.get(i).getTitle());
+                movie.put(TAG_DESCRIPTION, results.get(i).getOverview());
+                movie.put(TAG_THUMBNAIL, results.get(i).getPosterPath());
+                movie.put(TAG_POPULARITY, String.valueOf(results.get(i).getPopularity()));
+                movie.put(TAG_RATING, String.valueOf(results.get(i).getVoteAverage()));
+                movie.put(TAG_DATE, results.get(i).getReleaseDate());
+
+
+                // adding movie to movie list
+                movieList.add(movie);
             }
+
 
             return null;
         }

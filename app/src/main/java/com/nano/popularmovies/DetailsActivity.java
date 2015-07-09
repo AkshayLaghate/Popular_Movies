@@ -26,6 +26,9 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.nano.popularmovies.Utils.DBBitmapUtility;
+import com.nano.popularmovies.Utils.MovieProvider;
+import com.nano.popularmovies.Utils.TinyDB;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;

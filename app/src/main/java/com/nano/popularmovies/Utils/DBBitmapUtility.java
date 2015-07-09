@@ -1,4 +1,4 @@
-package com.nano.popularmovies;
+package com.nano.popularmovies.Utils;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;

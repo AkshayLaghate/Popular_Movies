@@ -36,7 +36,7 @@
         </activity>
 
         <provider
-            android:name="MovieProvider"
+            android:name=".Utils.MovieProvider"
             android:authorities="com.nano.provider.popularmovies"></provider>
     </application>
 

@@ -1,4 +1,4 @@
-package com.nano.popularmovies;
+package com.nano.popularmovies.Utils;
 
 import android.content.ContentProvider;
 import android.content.ContentUris;
