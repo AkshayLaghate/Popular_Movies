@@ -20,26 +20,22 @@ import java.util.HashMap;
 public class MovieProvider extends ContentProvider {
 
 
-    static final String PROVIDER_NAME = "com.nano.provider.popularmovies";
-    static final String URL = "content://" + PROVIDER_NAME + "/movies";
-    static final Uri CONTENT_URI = Uri.parse(URL);
-
-    static final String _ID = "_id";
-    static final String ID = "id";
-    static final String NAME = "name";
-    static final String DESCRIPTION = "description";
-    static final String RATING = "rating";
-    static final String DATE = "date";
-    static final String REVIEW = "review";
-    static final String POSTER = "poster";
-    static final String BIG = "big";
-    static final int MOVIES = 1;
-    static final int MOVIE_ID = 2;
-    static final UriMatcher uriMatcher;
-    static final String DATABASE_NAME = "PopularMovies";
-    static final String MOVIES_TABLE_NAME = "movies";
-    static final int DATABASE_VERSION = 1;
-    static final String CREATE_DB_TABLE =
+    public static final String _ID = "_id";
+    public static final String ID = "id";
+    public static final String NAME = "name";
+    public static final String DESCRIPTION = "description";
+    public static final String RATING = "rating";
+    public static final String DATE = "date";
+    public static final String REVIEW = "review";
+    public static final String POSTER = "poster";
+    public static final String BIG = "big";
+    public static final int MOVIES = 1;
+    public static final int MOVIE_ID = 2;
+    public static final UriMatcher uriMatcher;
+    public static final String DATABASE_NAME = "PopularMovies";
+    public static final String MOVIES_TABLE_NAME = "movies";
+    public static final int DATABASE_VERSION = 1;
+    public static final String CREATE_DB_TABLE =
             " CREATE TABLE " + MOVIES_TABLE_NAME +
                     " (_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     " id TEXT NOT NULL, " +
@@ -50,6 +46,9 @@ public class MovieProvider extends ContentProvider {
                     " review TEXT NOT NULL, " +
                     " poster BLOB NOT NULL," +
                     " big BLOB NOT NULL);";
+    static final String PROVIDER_NAME = "com.nano.provider.popularmovies";
+    static final String URL = "content://" + PROVIDER_NAME + "/movies";
+    static final Uri CONTENT_URI = Uri.parse(URL);
     private static HashMap<String, String> MOVIES_PROJECTION_MAP;
 
     static {
