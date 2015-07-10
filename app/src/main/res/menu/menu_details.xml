@@ -9,7 +9,7 @@
         android:id="@+id/addToFav"
         android:orderInCategory="10"
         android:title="@string/action_fav"
-        app:showAsAction="always" />
+        app:showAsAction="never" />
 
     <item
         android:id="@+id/searchYTS"

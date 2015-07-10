@@ -10,7 +10,9 @@ import retrofit.http.Query;
 public class ServiceApi {
 
 
+
     public static TMDBService tmdbService;
+    public static MovieService movieService;
 
     public static TMDBService getTMDBService() {
         if (tmdbService == null) {
@@ -23,8 +25,27 @@ public class ServiceApi {
         return tmdbService;
     }
 
+    public static MovieService getMovieService() {
+        if (movieService == null) {
+            RestAdapter restAdapter = new RestAdapter.Builder()
+                    .setEndpoint("http://api.themoviedb.org")
+                    .build();
+
+            movieService = restAdapter.create(MovieService.class);
+        }
+        return movieService;
+    }
+
     public interface TMDBService {
+
         @GET("/3/discover/movie")
         MovieData listMovies(@Query("sort_by") String sort, @Query("api_key") String apiKey);
     }
+
+    public interface MovieService {
+
+        @GET("/3/discover/movie")
+        MovieData movieDetails(@Query("sort_by") String sort, @Query("api_key") String apiKey);
+    }
+
 }

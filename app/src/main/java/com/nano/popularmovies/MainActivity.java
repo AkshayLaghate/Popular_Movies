@@ -13,10 +13,9 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -63,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
 
     Bitmap[] imgs;
 
-
+    Toolbar bar;
     StaggeredGridView sgridView;
 
     ProgressDialog pd;
@@ -72,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
     JSONArray movies = null;
     // Hashmap for ListView
     ArrayList<HashMap<String, String>> movieList;
-    ActionBar bar;
+
     DisplayMetrics metrics;
     int height, width;
 
@@ -91,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
     String query = query_Popular;
     private String api_key = "3545a57a2f23dac5f3a1a0ddb84aa0df";
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,8 +102,10 @@ public class MainActivity extends AppCompatActivity {
         height = metrics.heightPixels;
 
 
-        bar = getSupportActionBar();
+        bar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(bar);
         bar.setTitle("Most Popular");
+
         adapter = new ImageAdapter(MainActivity.this);
 
         pd = new ProgressDialog(MainActivity.this);
@@ -118,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
         poster_list = new ArrayList<>();
 
         swipe = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
-        swipe.setColorSchemeResources(R.color.teal_700, R.color.indigo_700);
+        swipe.setColorSchemeResources(R.color.pink_A400, R.color.indigo_700);
         swipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -140,20 +142,6 @@ public class MainActivity extends AppCompatActivity {
                     Toast.LENGTH_SHORT).show();
         }
 
-        //gridview = (GridView) findViewById(R.id.gridview);
-        //mGridView = (CardGridStaggeredView) findViewById(R.id.carddemo_extras_grid_stag);
-
-
-
-
-     /*   config = getResources().getConfiguration();
-        if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-
-            gridview.setNumColumns(4);
-        } else {
-
-            gridview.setNumColumns(2);
-        }*/
 
         sgridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v,
@@ -164,20 +152,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
-
-        /*gridview.setOnScrollListener(new AbsListView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {
-
-            }
-
-            @Override
-            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-
-
-            }
-        });*/
 
     }
 
@@ -307,50 +281,18 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    /*@Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-
-        gridview.setVisibility(View.INVISIBLE);
-
-        width = metrics.widthPixels;
-        height = metrics.heightPixels;
-
-        // Checks the orientation of the screen
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-
-
-            gridview.setNumColumns(4);
-            if (isNetworkOnline()) {
-                new GetMovies().execute();
-            } else {
-                Toast.makeText(MainActivity.this, "Check Network Connection and try again!",
-                        Toast.LENGTH_SHORT).show();
-            }
-        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-
-
-            gridview.setNumColumns(2);
-            if (isNetworkOnline()) {
-                new GetMovies().execute();
-            } else {
-                Toast.makeText(MainActivity.this, "Check Network Connection and try again!",
-                        Toast.LENGTH_SHORT).show();
-            }
-        }
-    }*/
 
     @Override
     public void onResume() {
 
-        //sgridView.setSelection(index);
+
         super.onResume();
 
     }
 
     @Override
     public void onPause() {
-        // index = sgridView.getFirstVisiblePosition();
+
         super.onPause();
 
     }
@@ -390,7 +332,7 @@ public class MainActivity extends AppCompatActivity {
 
                 LayoutInflater inflater = (LayoutInflater) getApplicationContext()
                         .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                convertView = inflater.inflate(R.layout.cardlib_card, null);
+                convertView = inflater.inflate(R.layout.cardlib_card, parent, false);
 
 
                 // get layout from mobile.xml
@@ -425,28 +367,6 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-        /*public View getView(int position, View convertView, ViewGroup parent) {
-
-
-            ImageView imageView;
-
-            if (convertView == null) {
-                // if it's not recycled, initialize some attributes
-                imageView = new ImageView(mContext);
-
-                imageView.setLayoutParams(new GridView.LayoutParams(width / 2, height / 2));
-                imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                imageView.setPadding(8, 8, 8, 8);
-            } else {
-                imageView = (ImageView) convertView;
-            }
-
-            imageView.setImageBitmap(imgs[position]);
-            return imageView;
-
-
-        }*/
-
 
     }
 
@@ -469,7 +389,7 @@ public class MainActivity extends AppCompatActivity {
             for (int i = 0; i < movieList.size(); i++) {
 
                 try {
-                    Log.d("poster is", "posterid=" + movieList.get(i).get(TAG_THUMBNAIL));
+
                     imgs[i] = Picasso.with(getApplicationContext()).load("http://image.tmdb.org/t/p/w185/" + movieList.get(i).get(TAG_THUMBNAIL)).placeholder(R.drawable.default_placeholder).get();
 
                 } catch (IOException e) {
@@ -491,15 +411,11 @@ public class MainActivity extends AppCompatActivity {
             sgridView.invalidateViews();
             sgridView.setVisibility(View.VISIBLE);
 
-
-            //new LoadCards().execute();
-
         }
     }
 
     // Make api call to tMDB and get JSON data in background thread
     private class GetMovies extends AsyncTask<String, Void, Void> {
-
 
 
         @Override
@@ -520,29 +436,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(String... params) {
-            // Creating service handler class instance
-            /*ServiceHandler sh = new ServiceHandler();
 
-            // Making a request to url and getting response
-            String jsonStr = sh.makeServiceCall(url, ServiceHandler.GET);
-
-            Log.d("Response: ", "> " + jsonStr);*/
-
-            /*OkHttpClient client = new OkHttpClient();
-            Request request = new Request.Builder()
-                    .url(url)
-                    .build();
-            String jsonStr = null;
-
-            try {
-                Response response = client.newCall(request).execute();
-                jsonStr = response.body().toString();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }*/
-
-
-            final String[] jsonStr = {null};
             MovieData md = ServiceApi.getTMDBService().listMovies(params[0], api_key);
             results = md.getResults();
 
@@ -582,62 +476,6 @@ public class MainActivity extends AppCompatActivity {
 
             new LoadImgs().execute();
 
-        }
-
-    }
-
-    private class LoadCards extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected void onPreExecute() {
-            // TODO Auto-generated method stub
-            super.onPreExecute();
-
-            pd.setMessage("Setting up the UI.....");
-
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-
-            for (int i = 0; i < movieList.size(); i++) {
-
-                final int finalI = i;
-                MaterialLargeImageCard card =
-                        MaterialLargeImageCard.with(getApplicationContext())
-                                .setTitle(movieList.get(i).get(TAG_NAME).toString())
-                                .useDrawableExternal(new MaterialLargeImageCard.DrawableExternal() {
-                                    @Override
-                                    public void setupInnerViewElements(ViewGroup viewGroup, View mview) {
-
-                                        Drawable d = new BitmapDrawable(getResources(), imgs[finalI]);
-
-                                        mview.setBackground(d);
-                                    }
-                                }).build();
-
-                cards.add(card);
-            }
-
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-
-
-
-            /*gridview.setAdapter(adapter);
-            gridview.invalidateViews();
-            gridview.setVisibility(View.VISIBLE);
-
-
-*/
-            pd.dismiss();
-            sgridView.setAdapter(adapter);
-            sgridView.invalidateViews();
-            sgridView.setVisibility(View.VISIBLE);
         }
 
     }

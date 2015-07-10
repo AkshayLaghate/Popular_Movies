@@ -46,9 +46,9 @@ public class MovieProvider extends ContentProvider {
                     " review TEXT NOT NULL, " +
                     " poster BLOB NOT NULL," +
                     " big BLOB NOT NULL);";
-    static final String PROVIDER_NAME = "com.nano.provider.popularmovies";
-    static final String URL = "content://" + PROVIDER_NAME + "/movies";
-    static final Uri CONTENT_URI = Uri.parse(URL);
+    public static final String PROVIDER_NAME = "com.nano.provider.popularmovies";
+    public static final String URL = "content://" + PROVIDER_NAME + "/movies";
+    public static final Uri CONTENT_URI = Uri.parse(URL);
     private static HashMap<String, String> MOVIES_PROJECTION_MAP;
 
     static {

@@ -14,8 +14,12 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
+import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.CollapsingToolbarLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.graphics.Palette;
+import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
@@ -29,12 +33,16 @@ import android.widget.Toast;
 import com.nano.popularmovies.Utils.DBBitmapUtility;
 import com.nano.popularmovies.Utils.MovieProvider;
 import com.nano.popularmovies.Utils.TinyDB;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -49,7 +57,10 @@ public class DetailsActivity extends AppCompatActivity {
     private static final String TAG_NAME = "name";
     private static final String TAG_AUTHOR = "author";
     private static final String TAG_CONTENT = "content";
-    ActionBar bar;
+    Toolbar bar;
+    AppBarLayout appBar;
+    CollapsingToolbarLayout collapsingToolbar;
+    FloatingActionButton fab;
     ScrollView scrollView;
     String movie_id, name, description, date, rating, poster_path, review;
     ImageView ivPoster, ivTeaser, ivTrailer;
@@ -80,7 +91,13 @@ public class DetailsActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.detail_view);
+        setContentView(R.layout.detail_new);
+
+        bar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(bar);
+        collapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+
 
         Bundle bag = getIntent().getExtras();
         movie_id = bag.getString("movie_id");
@@ -91,14 +108,14 @@ public class DetailsActivity extends AppCompatActivity {
         poster_path = bag.getString("poster_path");
 
 
-        metrics = this.getResources().getDisplayMetrics();
+        /*metrics = this.getResources().getDisplayMetrics();
         width = metrics.widthPixels;
-        height = metrics.heightPixels;
+        height = metrics.heightPixels;*/
 
-        bar = getSupportActionBar();
+        /*bar = getSupportActionBar();
         bar.setHomeButtonEnabled(true);
         bar.setDisplayOptions(ActionBar.DISPLAY_SHOW_TITLE | ActionBar.DISPLAY_SHOW_CUSTOM, ActionBar.DISPLAY_SHOW_CUSTOM);
-        bar.setTitle("Movie Details");
+        bar.setTitle("Movie Details");*/
 
         tiny = new TinyDB(this);
         posterList = new ArrayList<>();
@@ -111,12 +128,13 @@ public class DetailsActivity extends AppCompatActivity {
         isFav = checkFav();
 
         scrollView = (ScrollView) findViewById(R.id.scrollView);
-        ivPoster = (ImageView) findViewById(R.id.ivPosterDetails);
-
+        ivPoster = (ImageView) findViewById(R.id.colHeader);
+        ivPoster.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
         ivTeaser = (ImageView) findViewById(R.id.ivTeaser);
         ivTrailer = (ImageView) findViewById(R.id.ivTrailerThumb);
 
-        tvTitle = (TextView) findViewById(R.id.tvPosterLabel);
+
+        //tvTitle = (TextView) findViewById(R.id.tvPosterLabel);
         tvDesc = (TextView) findViewById(R.id.description_data);
         tvDate = (TextView) findViewById(R.id.release_details);
         tvRating = (TextView) findViewById(R.id.rating_details);
@@ -124,7 +142,8 @@ public class DetailsActivity extends AppCompatActivity {
         tvTrailer = (TextView) findViewById(R.id.tvTrailer);
         tvTeaser = (TextView) findViewById(R.id.tvTeaser);
 
-        tvTitle.setText(name);
+        collapsingToolbar.setTitle(name);
+        // tvTitle.setText(name);
         tvDesc.setText(description);
         tvDate.setText("Release Date : " + date);
         tvRating.setText("Rating : " + rating + "/10");
@@ -170,7 +189,6 @@ public class DetailsActivity extends AppCompatActivity {
                 }
             }
         });
-
 
     }
 
@@ -308,6 +326,17 @@ public class DetailsActivity extends AppCompatActivity {
         super.onBackPressed();
     }
 
+    public void generatePallete(Bitmap bmp) {
+
+        Palette.from(bmp).generate(new Palette.PaletteAsyncListener() {
+            @Override
+            public void onGenerated(Palette palette) {
+                int mutedColor = palette.getMutedColor(R.attr.colorPrimary);
+                collapsingToolbar.setContentScrimColor(mutedColor);
+            }
+        });
+    }
+
     private class GetPoster extends AsyncTask<Void, Void, Void> {
 
         @Override
@@ -321,11 +350,30 @@ public class DetailsActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... arg0) {
             // Creating service handler class instance
-            ServiceHandler sh = new ServiceHandler();
+            /*ServiceHandler sh = new ServiceHandler();
 
             // Making a request to url and getting response
-            String jsonStr = sh.makeServiceCall("http://api.themoviedb.org/3/movie/" + movie_id + "/images?api_key=3545a57a2f23dac5f3a1a0ddb84aa0df", ServiceHandler.GET);
+            String jsonStr = sh.makeServiceCall("http://api.themoviedb.org/3/movie/" + movie_id + "/images?api_key=3545a57a2f23dac5f3a1a0ddb84aa0df", ServiceHandler.GET);*/
 
+
+            String url = "http://api.themoviedb.org/3/movie/" + movie_id + "/images?api_key=3545a57a2f23dac5f3a1a0ddb84aa0df";
+            String jsonStr = null;
+
+            OkHttpClient client = new OkHttpClient();
+
+
+            Request request = new Request.Builder()
+                    .url(url)
+                    .build();
+
+            Response response = null;
+            try {
+                response = client.newCall(request).execute();
+                jsonStr = response.body().string();
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.d("Response", "Error: " + e);
+            }
             Log.d("Response: ", "> " + jsonStr);
 
             if (jsonStr != null) {
@@ -351,6 +399,7 @@ public class DetailsActivity extends AppCompatActivity {
                         poster = Picasso.with(getApplicationContext()).load("http://image.tmdb.org/t/p/w342/" + posterList.get(0)).placeholder(R.drawable.default_placeholder).get();
                         poster_bg = Picasso.with(getApplicationContext()).load("http://image.tmdb.org/t/p/w342/" + posterList.get(1)).placeholder(R.drawable.default_placeholder).get();
                         thumb = Picasso.with(getApplicationContext()).load("http://image.tmdb.org/t/p/w342/" + poster_path).placeholder(R.drawable.default_placeholder).get();
+
 
                     } catch (Exception e) {
 
@@ -382,6 +431,7 @@ public class DetailsActivity extends AppCompatActivity {
 
 
             ivPoster.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            generatePallete(poster);
             ivPoster.setImageBitmap(poster);
             poster_bg_drawable = new BitmapDrawable(getResources(), poster_bg);
             //scrollView.setBackground(poster_bg_drawable);
@@ -405,11 +455,29 @@ public class DetailsActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... arg0) {
             // Creating service handler class instance
-            ServiceHandler sh = new ServiceHandler();
+            /*ServiceHandler sh = new ServiceHandler();
 
             // Making a request to url and getting response
             String jsonStr = sh.makeServiceCall("http://api.themoviedb.org/3/movie/" + movie_id + "/reviews?api_key=3545a57a2f23dac5f3a1a0ddb84aa0df", ServiceHandler.GET);
+*/
+            String url = "http://api.themoviedb.org/3/movie/" + movie_id + "/reviews?api_key=3545a57a2f23dac5f3a1a0ddb84aa0df";
+            String jsonStr = null;
 
+            OkHttpClient client = new OkHttpClient();
+
+
+            Request request = new Request.Builder()
+                    .url(url)
+                    .build();
+
+            Response response = null;
+            try {
+                response = client.newCall(request).execute();
+                jsonStr = response.body().string();
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.d("Response", "Error: " + e);
+            }
             Log.d("Response: ", "> " + jsonStr);
 
             if (jsonStr != null) {
@@ -490,11 +558,30 @@ public class DetailsActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... arg0) {
             // Creating service handler class instance
-            ServiceHandler sh = new ServiceHandler();
+            /*ServiceHandler sh = new ServiceHandler();
 
             // Making a request to url and getting response
             String jsonStr = sh.makeServiceCall("http://api.themoviedb.org/3/movie/" + movie_id + "/videos?api_key=3545a57a2f23dac5f3a1a0ddb84aa0df", ServiceHandler.GET);
+*/
 
+            String url = "http://api.themoviedb.org/3/movie/" + movie_id + "/videos?api_key=3545a57a2f23dac5f3a1a0ddb84aa0df";
+            String jsonStr = null;
+
+            OkHttpClient client = new OkHttpClient();
+
+
+            Request request = new Request.Builder()
+                    .url(url)
+                    .build();
+
+            Response response = null;
+            try {
+                response = client.newCall(request).execute();
+                jsonStr = response.body().string();
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.d("Response", "Error: " + e);
+            }
             Log.d("Response: ", "> " + jsonStr);
 
             if (jsonStr != null) {
@@ -578,10 +665,32 @@ public class DetailsActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... params) {
-            ServiceHandler sh = new ServiceHandler();
 
+
+
+
+            /*ServiceHandler sh = new ServiceHandler();
             // Making a request to url and getting response
-            String jsonStr = sh.makeServiceCall("https://yts.to/api/v2/list_movies.json?query_term=" + name.replace(" ", "%20"), ServiceHandler.GET);
+            String jsonStr = sh.makeServiceCall(url, ServiceHandler.GET);*/
+
+            String url = "https://yts.to/api/v2/list_movies.json?query_term=" + name.replace(" ", "%20");
+            String jsonStr = null;
+
+            OkHttpClient client = new OkHttpClient();
+
+
+            Request request = new Request.Builder()
+                    .url(url)
+                    .build();
+
+            Response response = null;
+            try {
+                response = client.newCall(request).execute();
+                jsonStr = response.body().string();
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.d("Response", "Error: " + e);
+            }
 
             Log.d("Response: ", "> " + jsonStr);
 

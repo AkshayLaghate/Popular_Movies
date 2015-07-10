@@ -277,5 +277,8 @@
     <color name="blue_grey_800">#37474f</color>
     <color name="blue_grey_900">#263238</color>
 
+    <color name="my_awesome_color">@color/indigo_800</color>
+    <color name="my_awesome_darker_color">@color/indigo_900</color>
+    <color name="accent_color">@color/pink_A400</color>
 
 </resources>

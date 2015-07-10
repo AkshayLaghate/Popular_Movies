@@ -5,7 +5,7 @@ android {
     buildToolsVersion '22.0.1'
     defaultConfig {
         applicationId "com.nano.popularmovies"
-        minSdkVersion 16
+        minSdkVersion 17
         targetSdkVersion 21
         versionCode 1
         versionName "1.0"
@@ -38,4 +38,6 @@ dependencies {
     compile 'com.etsy.android.grid:library:1.0.5'
     compile 'com.github.gabrielemariotti.cards:cardslib-core:2.1.0'
     compile 'com.github.gabrielemariotti.cards:cardslib-cards:2.1.0'
+    compile 'com.android.support:design:22.2.0'
+    compile 'com.android.support:palette-v7:22.2.0'
 }
