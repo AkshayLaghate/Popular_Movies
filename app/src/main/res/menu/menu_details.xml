@@ -14,7 +14,7 @@
     <item
         android:id="@+id/searchYTS"
         android:orderInCategory="20"
-        android:title="Search torrent Yify"
+        android:title="Get torrent"
         app:showAsAction="never" />
 
 

@@ -725,7 +725,8 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
 
     private class SerachYTS extends AsyncTask<Void, Void, Void> {
 
-        int found;
+
+        String key;
 
         @Override
         protected void onPreExecute() {
@@ -746,7 +747,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
             // Making a request to url and getting response
             String jsonStr = sh.makeServiceCall(url, ServiceHandler.GET);*/
 
-            String url = "https://yts.to/api/v2/list_movies.json?query_term=" + name.replace(" ", "%20");
+            String url = "https://getstrike.net/api/v2/torrents/search/?phrase=" + name.replace(" ", "%20");
             String jsonStr = null;
 
             OkHttpClient client = new OkHttpClient();
@@ -771,14 +772,15 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
                 try {
                     JSONObject jsonObj = new JSONObject(jsonStr);
 
+                    dataArray = jsonObj.getJSONArray("torrents");
 
-                    JSONObject data = jsonObj.getJSONObject("data");
+                    JSONObject data = dataArray.getJSONObject(0);
 
 
-                    String key = data.getString("movie_count");
+                    key = data.getString("magnet_uri");
 
-                    found = Integer.parseInt(key);
-                    Log.e("count", key);
+
+                    Log.e("magnet", key);
 
 
                 } catch (JSONException e) {
@@ -797,10 +799,12 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
             pd.dismiss();
             super.onPostExecute(aVoid);
 
-            if (found > 0) {
-                Toast.makeText(DetailsActivity.this, found + " torrent(s) found", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(DetailsActivity.this, "No torrents found", Toast.LENGTH_SHORT).show();
+            try {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(key));
+                startActivity(browserIntent);
+            } catch (Exception e) {
+                Toast.makeText(DetailsActivity.this, "No Torrent found", Toast.LENGTH_SHORT).show();
+                Log.e("error", e.toString());
             }
         }
     }
