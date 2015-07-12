@@ -297,6 +297,12 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onStop() {
+
+        super.onStop();
+    }
+
     // Adapter for gridview
     public class ImageAdapter extends BaseAdapter {
         private Context mContext;
@@ -510,7 +516,7 @@ public class MainActivity extends AppCompatActivity {
                     movie.put(TAG_ID, c.getString(c.getColumnIndex(MovieProvider.ID)));
                     movie.put(TAG_NAME, c.getString(c.getColumnIndex(MovieProvider.NAME)));
                     movie.put(TAG_DESCRIPTION, c.getString(c.getColumnIndex(MovieProvider.DESCRIPTION)));
-
+                    movie.put(TAG_THUMBNAIL, c.getString(c.getColumnIndex(MovieProvider.POSTER_PATH)));
 
                     movie.put(TAG_RATING, c.getString(c.getColumnIndex(MovieProvider.RATING)));
                     movie.put(TAG_DATE, c.getString(c.getColumnIndex(MovieProvider.DATE)));
@@ -518,7 +524,7 @@ public class MainActivity extends AppCompatActivity {
 
                     // adding movie to movie list
                     movieList.add(movie);
-                    thumbList.add(c.getBlob(7));
+                    thumbList.add(c.getBlob(8));
 
 
                 } while (c.moveToNext());

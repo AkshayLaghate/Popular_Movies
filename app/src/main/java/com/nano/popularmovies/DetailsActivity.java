@@ -5,10 +5,10 @@ import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
+import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -25,6 +25,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -33,6 +34,7 @@ import android.widget.Toast;
 import com.nano.popularmovies.Utils.DBBitmapUtility;
 import com.nano.popularmovies.Utils.MovieProvider;
 import com.nano.popularmovies.Utils.TinyDB;
+import com.readystatesoftware.systembartint.SystemBarTintManager;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
@@ -49,7 +51,7 @@ import java.util.HashMap;
 /**
  * Created by Akki on 19/06/15.
  */
-public class DetailsActivity extends AppCompatActivity {
+public class DetailsActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG_POSTER = "backdrops";
     private static final String TAG_REVIEW = "results"; // works for both reviews and videos api call
@@ -63,15 +65,14 @@ public class DetailsActivity extends AppCompatActivity {
     FloatingActionButton fab;
     ScrollView scrollView;
     String movie_id, name, description, date, rating, poster_path, review;
-    ImageView ivPoster, ivTeaser, ivTrailer;
+    ImageView ivPoster, ivThumb, ivTeaser, ivTrailer;
     TextView tvTitle, tvDesc, tvDate, tvRating, tvReview, tvTrailer, tvTeaser;
     JSONArray dataArray = null;
     ArrayList<String> posterList, favMovies;
     ArrayList<HashMap<String, String>> reviews, videos;
-    Drawable poster_bg_drawable;
 
 
-    Bitmap poster, poster_bg;
+    Bitmap poster;
     Bitmap thumb;
 
     TinyDB tiny;
@@ -84,19 +85,32 @@ public class DetailsActivity extends AppCompatActivity {
 
     ProgressDialog pd;
 
-    byte[] big;
+    byte[] big, thumbDB;
+
+    SystemBarTintManager tintManager;
 
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS | WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+
         setContentView(R.layout.detail_new);
+
+        tintManager = new SystemBarTintManager(this);
+        // enable status bar tint
+        tintManager.setStatusBarTintEnabled(true);
+        // enable navigation bar tint
+        tintManager.setNavigationBarTintEnabled(true);
+
 
         bar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(bar);
         collapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
         fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(this);
+        appBar = (AppBarLayout) findViewById(R.id.appbar);
 
 
         Bundle bag = getIntent().getExtras();
@@ -129,15 +143,17 @@ public class DetailsActivity extends AppCompatActivity {
 
         scrollView = (ScrollView) findViewById(R.id.scrollView);
         ivPoster = (ImageView) findViewById(R.id.colHeader);
-        ivPoster.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        ivPoster.setScaleType(ImageView.ScaleType.FIT_CENTER);
         ivTeaser = (ImageView) findViewById(R.id.ivTeaser);
         ivTrailer = (ImageView) findViewById(R.id.ivTrailerThumb);
+        ivThumb = (ImageView) findViewById(R.id.ivThumbNew);
+        ivThumb.setScaleType(ImageView.ScaleType.FIT_CENTER);
 
 
         //tvTitle = (TextView) findViewById(R.id.tvPosterLabel);
         tvDesc = (TextView) findViewById(R.id.description_data);
-        tvDate = (TextView) findViewById(R.id.release_details);
-        tvRating = (TextView) findViewById(R.id.rating_details);
+        tvDate = (TextView) findViewById(R.id.tvDateNew);
+        tvRating = (TextView) findViewById(R.id.tvRatingNew);
         tvReview = (TextView) findViewById(R.id.reviews_details);
         tvTrailer = (TextView) findViewById(R.id.tvTrailer);
         tvTeaser = (TextView) findViewById(R.id.tvTeaser);
@@ -161,6 +177,7 @@ public class DetailsActivity extends AppCompatActivity {
             }
 
         }
+
 
         ivTeaser.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -189,6 +206,13 @@ public class DetailsActivity extends AppCompatActivity {
                 }
             }
         });
+
+
+        if (isFav) {
+
+            fab.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.star_filled));
+
+        }
 
     }
 
@@ -304,6 +328,7 @@ public class DetailsActivity extends AppCompatActivity {
         values.put(MovieProvider.REVIEW, tvReview.getText().toString());
         values.put(MovieProvider.POSTER, thumb_array);
         values.put(MovieProvider.BIG, poster_array);
+        values.put(MovieProvider.POSTER_PATH, poster_path);
 
 
         Uri uri = getContentResolver().insert(
@@ -324,7 +349,9 @@ public class DetailsActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+
     }
+
 
     public void generatePallete(Bitmap bmp) {
 
@@ -333,8 +360,52 @@ public class DetailsActivity extends AppCompatActivity {
             public void onGenerated(Palette palette) {
                 int mutedColor = palette.getMutedColor(R.attr.colorPrimary);
                 collapsingToolbar.setContentScrimColor(mutedColor);
+                tintManager.setTintColor(mutedColor);
             }
         });
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.fab:
+                if (loadingComplete) {
+                    if (isFav) {
+
+                        fab.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.star_unfilled));
+
+                        favMovies.remove(movie_id);
+                        removeFromFav();
+                    } else {
+
+                        fab.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.star_filled));
+
+                        favMovies.add(movie_id);
+                        saveMovieToFav();
+                    }
+                } else
+                    Toast.makeText(this, "Loading details... Wait some time", Toast.LENGTH_SHORT).show();
+
+
+                tiny.putListString("movies", favMovies);
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        // Checks the orientation of the screen
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            ivPoster.setImageBitmap(Bitmap.createScaledBitmap(poster, ivPoster.getWidth(), ivPoster.getHeight(), false));
+
+        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            ivPoster.setImageBitmap(Bitmap.createScaledBitmap(poster, ivPoster.getWidth(), ivPoster.getHeight(), false));
+
+        }
     }
 
     private class GetPoster extends AsyncTask<Void, Void, Void> {
@@ -396,9 +467,9 @@ public class DetailsActivity extends AppCompatActivity {
 
                     try {
 
+
+                        thumb = Picasso.with(getApplicationContext()).load("http://image.tmdb.org/t/p/w185/" + poster_path).placeholder(R.drawable.default_placeholder).get();
                         poster = Picasso.with(getApplicationContext()).load("http://image.tmdb.org/t/p/w342/" + posterList.get(0)).placeholder(R.drawable.default_placeholder).get();
-                        poster_bg = Picasso.with(getApplicationContext()).load("http://image.tmdb.org/t/p/w342/" + posterList.get(1)).placeholder(R.drawable.default_placeholder).get();
-                        thumb = Picasso.with(getApplicationContext()).load("http://image.tmdb.org/t/p/w342/" + poster_path).placeholder(R.drawable.default_placeholder).get();
 
 
                     } catch (Exception e) {
@@ -410,11 +481,11 @@ public class DetailsActivity extends AppCompatActivity {
 
 
                 } catch (JSONException e) {
-                    Log.e("error", e.toString());
+                    Log.w("error", e.toString());
 
                 }
             } else {
-                Log.e("ServiceHandler", "Couldn't get any data from the url");
+                Log.w("ServiceHandler", "Couldn't get any data from the url");
             }
 
             return null;
@@ -430,12 +501,14 @@ public class DetailsActivity extends AppCompatActivity {
              * */
 
 
-            ivPoster.setScaleType(ImageView.ScaleType.FIT_CENTER);
             generatePallete(poster);
-            ivPoster.setImageBitmap(poster);
-            poster_bg_drawable = new BitmapDrawable(getResources(), poster_bg);
-            //scrollView.setBackground(poster_bg_drawable);
+            ivPoster.setImageBitmap(Bitmap.createScaledBitmap(poster, ivPoster.getWidth(), ivPoster.getHeight(), false));
 
+            if (thumb != null)
+                ivThumb.setImageBitmap(Bitmap.createScaledBitmap(thumb, ivThumb.getWidth(), ivThumb.getHeight(), false));
+
+
+            //scrollView.setBackground(poster_bg_drawable);
 
 
         }
@@ -744,7 +817,8 @@ public class DetailsActivity extends AppCompatActivity {
 
 
                     review = c.getString(c.getColumnIndex(MovieProvider.REVIEW));
-                    big = c.getBlob(8);
+                    big = c.getBlob(9);
+                    thumbDB = c.getBlob(8);
 
 
                 } while (c.moveToNext());
@@ -760,6 +834,7 @@ public class DetailsActivity extends AppCompatActivity {
 
             loadingComplete = true;
             tvReview.setText(review);
+            ivThumb.setImageBitmap(DBBitmapUtility.getImage(thumbDB));
             ivPoster.setImageBitmap(DBBitmapUtility.getImage(big));
             tvTeaser.setText("Not Available Offline");
             tvTrailer.setText("Not Available Offline");
@@ -768,6 +843,7 @@ public class DetailsActivity extends AppCompatActivity {
             super.onPostExecute(aVoid);
         }
     }
+
 }
 
 

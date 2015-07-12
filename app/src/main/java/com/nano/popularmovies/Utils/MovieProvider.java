@@ -25,6 +25,7 @@ public class MovieProvider extends ContentProvider {
     public static final String NAME = "name";
     public static final String DESCRIPTION = "description";
     public static final String RATING = "rating";
+    public static final String POSTER_PATH = "poster_path";
     public static final String DATE = "date";
     public static final String REVIEW = "review";
     public static final String POSTER = "poster";
@@ -44,6 +45,7 @@ public class MovieProvider extends ContentProvider {
                     " date TEXT NOT NULL, " +
                     " rating TEXT NOT NULL, " +
                     " review TEXT NOT NULL, " +
+                    " poster_path TEXT NOT NULL, " +
                     " poster BLOB NOT NULL," +
                     " big BLOB NOT NULL);";
     public static final String PROVIDER_NAME = "com.nano.provider.popularmovies";

@@ -9,7 +9,7 @@
     <android.support.design.widget.AppBarLayout
         android:id="@+id/appbar"
         android:layout_width="match_parent"
-        android:layout_height="220dp"
+        android:layout_height="256dp"
         android:fitsSystemWindows="true"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
@@ -17,6 +17,7 @@
             android:id="@+id/collapsing_toolbar"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_gravity="bottom"
             android:fitsSystemWindows="true"
             app:contentScrim="?attr/colorPrimary"
             app:expandedTitleMarginEnd="50dp"
@@ -56,7 +57,7 @@
             android:orientation="vertical"
             android:paddingBottom="16dp"
 
-            android:paddingTop="48dp">
+            android:paddingTop="20dp">
 
             <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
 
@@ -72,36 +73,47 @@
                 card_view:cardElevation="2sp"
                 card_view:cardUseCompatPadding="true">
 
-                <LinearLayout
+                <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-                    <TextView
+                    <ImageView
+                        android:id="@+id/ivThumbNew"
+                        android:layout_width="140dp"
+                        android:layout_height="180dp"
+                        android:layout_margin="20dp" />
 
-                        android:id="@+id/release_details"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:padding="5dp"
-                        android:paddingLeft="5dp"
-                        android:text="Release Date :"
-                        android:textColor="@android:color/black"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentRight="false"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="20dp"
+                        android:layout_toRightOf="@+id/ivThumbNew"
+                        android:orientation="vertical">
 
-                    <TextView
+                        <TextView
+                            android:id="@+id/tvRatingNew"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentRight="false"
+                            android:layout_margin="10dp"
+                            android:layout_toRightOf="@+id/ivThumbNew"
+                            android:text="New Text" />
 
-                        android:id="@+id/rating_details"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:padding="5dp"
-                        android:paddingLeft="5dp"
-                        android:text="Rating :"
-                        android:textColor="@android:color/black"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
+                        <TextView
+                            android:id="@+id/tvDateNew"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignWithParentIfMissing="true"
+                            android:layout_below="@+id/tvRatingNew"
+                            android:layout_margin="10dp"
+                            android:layout_toRightOf="@+id/ivThumbNew"
+                            android:text="New Text" />
+                    </LinearLayout>
 
-                </LinearLayout>
+                </RelativeLayout>
 
             </android.support.v7.widget.CardView>
 
@@ -288,7 +300,8 @@
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:clickable="true"
-        android:src="@drawable/ic_action_favorite"
+        android:src="@drawable/star_unfilled"
+
         app:backgroundTint="@color/accent_color"
         app:layout_anchor="@id/appbar"
         app:layout_anchorGravity="bottom|right|end"
