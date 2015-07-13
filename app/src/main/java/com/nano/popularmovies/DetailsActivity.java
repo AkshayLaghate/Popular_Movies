@@ -17,10 +17,10 @@ import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -66,7 +66,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
     ScrollView scrollView;
     String movie_id, name, description, date, rating, poster_path, review;
     ImageView ivPoster, ivThumb, ivTeaser, ivTrailer;
-    TextView tvTitle, tvDesc, tvDate, tvRating, tvReview, tvTrailer, tvTeaser;
+    TextView tvDesc, tvDate, tvRating, tvReview, tvTrailer, tvTeaser;
     JSONArray dataArray = null;
     ArrayList<String> posterList, favMovies;
     ArrayList<HashMap<String, String>> reviews, videos;
@@ -77,8 +77,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
 
     TinyDB tiny;
 
-    DisplayMetrics metrics;
-    int height, width;
+
 
     boolean isFav, loadingComplete = false;
     MenuItem fav;
@@ -106,7 +105,10 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
 
 
         bar = (Toolbar) findViewById(R.id.toolbar);
+
         setSupportActionBar(bar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
         collapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(this);
@@ -122,14 +124,6 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         poster_path = bag.getString("poster_path");
 
 
-        /*metrics = this.getResources().getDisplayMetrics();
-        width = metrics.widthPixels;
-        height = metrics.heightPixels;*/
-
-        /*bar = getSupportActionBar();
-        bar.setHomeButtonEnabled(true);
-        bar.setDisplayOptions(ActionBar.DISPLAY_SHOW_TITLE | ActionBar.DISPLAY_SHOW_CUSTOM, ActionBar.DISPLAY_SHOW_CUSTOM);
-        bar.setTitle("Movie Details");*/
 
         tiny = new TinyDB(this);
         posterList = new ArrayList<>();
@@ -150,7 +144,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         ivThumb.setScaleType(ImageView.ScaleType.FIT_CENTER);
 
 
-        //tvTitle = (TextView) findViewById(R.id.tvPosterLabel);
+
         tvDesc = (TextView) findViewById(R.id.description_data);
         tvDate = (TextView) findViewById(R.id.tvDateNew);
         tvRating = (TextView) findViewById(R.id.tvRatingNew);
@@ -159,7 +153,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         tvTeaser = (TextView) findViewById(R.id.tvTeaser);
 
         collapsingToolbar.setTitle(name);
-        // tvTitle.setText(name);
+
         tvDesc.setText(description);
         tvDate.setText("Release Date : " + date);
         tvRating.setText("Rating : " + rating + "/10");
@@ -274,7 +268,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
             case android.R.id.home:
 
                 onBackPressed();
-                //NavUtils.navigateUpFromSameTask(this);
+                NavUtils.navigateUpFromSameTask(this);
 
                 break;
 
@@ -500,15 +494,14 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
              * Updating parsed JSON data into ListView
              * */
 
+            if (poster != null) {
+                generatePallete(poster);
+                ivPoster.setImageBitmap(Bitmap.createScaledBitmap(poster, ivPoster.getWidth(), ivPoster.getHeight(), false));
+            }
 
-            generatePallete(poster);
-            ivPoster.setImageBitmap(Bitmap.createScaledBitmap(poster, ivPoster.getWidth(), ivPoster.getHeight(), false));
 
             if (thumb != null)
                 ivThumb.setImageBitmap(Bitmap.createScaledBitmap(thumb, ivThumb.getWidth(), ivThumb.getHeight(), false));
-
-
-            //scrollView.setBackground(poster_bg_drawable);
 
 
         }
@@ -521,18 +514,14 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         protected void onPreExecute() {
             super.onPreExecute();
             // Showing progress dialog
-
+            tvReview.setText("Loading...");
 
         }
 
         @Override
         protected Void doInBackground(Void... arg0) {
             // Creating service handler class instance
-            /*ServiceHandler sh = new ServiceHandler();
 
-            // Making a request to url and getting response
-            String jsonStr = sh.makeServiceCall("http://api.themoviedb.org/3/movie/" + movie_id + "/reviews?api_key=3545a57a2f23dac5f3a1a0ddb84aa0df", ServiceHandler.GET);
-*/
             String url = "http://api.themoviedb.org/3/movie/" + movie_id + "/reviews?api_key=3545a57a2f23dac5f3a1a0ddb84aa0df";
             String jsonStr = null;
 
@@ -631,11 +620,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         @Override
         protected Void doInBackground(Void... arg0) {
             // Creating service handler class instance
-            /*ServiceHandler sh = new ServiceHandler();
 
-            // Making a request to url and getting response
-            String jsonStr = sh.makeServiceCall("http://api.themoviedb.org/3/movie/" + movie_id + "/videos?api_key=3545a57a2f23dac5f3a1a0ddb84aa0df", ServiceHandler.GET);
-*/
 
             String url = "http://api.themoviedb.org/3/movie/" + movie_id + "/videos?api_key=3545a57a2f23dac5f3a1a0ddb84aa0df";
             String jsonStr = null;
@@ -705,7 +690,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
              * Updating parsed JSON data into ListView
              * */
 
-
+            if (videos.size() > 0) {
             try {
 
                 tvTeaser.setText(videos.get(0).get(TAG_NAME));
@@ -717,7 +702,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
             } catch (Exception e) {
                 Log.e("error", e.toString());
             }
-
+            }
 
         }
 
@@ -740,12 +725,6 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         @Override
         protected Void doInBackground(Void... params) {
 
-
-
-
-            /*ServiceHandler sh = new ServiceHandler();
-            // Making a request to url and getting response
-            String jsonStr = sh.makeServiceCall(url, ServiceHandler.GET);*/
 
             String url = "https://getstrike.net/api/v2/torrents/search/?phrase=" + name.replace(" ", "%20");
             String jsonStr = null;

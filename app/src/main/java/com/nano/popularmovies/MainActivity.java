@@ -42,7 +42,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import it.gmariotti.cardslib.library.cards.material.MaterialLargeImageCard;
-import it.gmariotti.cardslib.library.internal.Card;
 import it.gmariotti.cardslib.library.view.CardViewNative;
 
 
@@ -81,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
     TinyDB tiny;
 
     ArrayList<byte[]> poster_list;
-    ArrayList<Card> cards = new ArrayList<Card>();
+
 
 
     List<Result> results;
@@ -96,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Toast.makeText(this, "Memory Available = " + Runtime.getRuntime().maxMemory() / 1000, Toast.LENGTH_SHORT).show();
 
         metrics = this.getResources().getDisplayMetrics();
         width = metrics.widthPixels;
@@ -170,6 +170,7 @@ public class MainActivity extends AppCompatActivity {
         i.putExtras(bag);
 
         startActivity(i);
+
 
     }
 
@@ -359,10 +360,12 @@ public class MainActivity extends AppCompatActivity {
                                 @Override
                                 public void setupInnerViewElements(ViewGroup viewGroup, View mview) {
 
-                                    Drawable d = new BitmapDrawable(getResources(), imgs[position]);
 
+                                    Drawable d = new BitmapDrawable(getResources(), imgs[position]);
                                     mview.setBackground(d);
+
                                 }
+
                             }).build();
 
 
@@ -375,6 +378,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
 
     // Load movie posters in background thread
     class LoadImgs extends AsyncTask<String, String, String> {
@@ -482,6 +486,7 @@ public class MainActivity extends AppCompatActivity {
 
             new LoadImgs().execute();
 
+
         }
 
     }
@@ -501,7 +506,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... params) {
-            // Retrieve student records
+
             String URL = "content://com.nano.provider.popularmovies/movies";
 
             Uri movies = Uri.parse(URL);
