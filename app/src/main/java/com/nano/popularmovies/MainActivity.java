@@ -66,22 +66,14 @@ public class MainActivity extends AppCompatActivity {
 
     ProgressDialog pd;
     ImageAdapter adapter;
-    // contacts JSONArray
     JSONArray movies = null;
-    // Hashmap for ListView
     ArrayList<HashMap<String, String>> movieList;
 
     DisplayMetrics metrics;
     int height, width;
-
-
     SwipeRefreshLayout swipe;
-
     TinyDB tiny;
-
     ArrayList<byte[]> poster_list;
-
-
 
     List<Result> results;
     String query_Rating = "vote_average.desc";

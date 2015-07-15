@@ -22,11 +22,18 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -51,7 +58,7 @@ import java.util.HashMap;
 /**
  * Created by Akki on 19/06/15.
  */
-public class DetailsActivity extends AppCompatActivity implements View.OnClickListener {
+public class DetailsActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemClickListener {
 
     private static final String TAG_POSTER = "backdrops";
     private static final String TAG_REVIEW = "results"; // works for both reviews and videos api call
@@ -66,7 +73,8 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
     ScrollView scrollView;
     String movie_id, name, description, date, rating, poster_path, review;
     ImageView ivPoster, ivThumb, ivTeaser, ivTrailer;
-    TextView tvDesc, tvDate, tvRating, tvReview, tvTrailer, tvTeaser;
+    TextView tvDesc, tvDate, tvRating, tvReview;
+    ListView lvVids;
     JSONArray dataArray = null;
     ArrayList<String> posterList, favMovies;
     ArrayList<HashMap<String, String>> reviews, videos;
@@ -79,6 +87,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
 
 
 
+
     boolean isFav, loadingComplete = false;
 
 
@@ -88,6 +97,27 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
 
     SystemBarTintManager tintManager;
 
+    public static void setListViewHeightBasedOnChildren(ListView listView) {
+        ListAdapter listAdapter = listView.getAdapter();
+        if (listAdapter == null)
+            return;
+
+        int desiredWidth = View.MeasureSpec.makeMeasureSpec(listView.getWidth(), View.MeasureSpec.UNSPECIFIED);
+        int totalHeight = 0;
+        View view = null;
+        for (int i = 0; i < listAdapter.getCount(); i++) {
+            view = listAdapter.getView(i, view, listView);
+            if (i == 0)
+                view.setLayoutParams(new ViewGroup.LayoutParams(desiredWidth, AbsListView.LayoutParams.WRAP_CONTENT));
+
+            view.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
+            totalHeight += view.getMeasuredHeight();
+        }
+        ViewGroup.LayoutParams params = listView.getLayoutParams();
+        params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
+        listView.setLayoutParams(params);
+        listView.requestLayout();
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -96,6 +126,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS | WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
 
         setContentView(R.layout.detail_new);
+
 
         tintManager = new SystemBarTintManager(this);
         // enable status bar tint
@@ -149,8 +180,12 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         tvDate = (TextView) findViewById(R.id.tvDateNew);
         tvRating = (TextView) findViewById(R.id.tvRatingNew);
         tvReview = (TextView) findViewById(R.id.reviews_details);
-        tvTrailer = (TextView) findViewById(R.id.tvTrailer);
-        tvTeaser = (TextView) findViewById(R.id.tvTeaser);
+
+
+        lvVids = (ListView) findViewById(R.id.lvVids);
+        lvVids.setOnItemClickListener(this);
+        lvVids.setVisibility(View.INVISIBLE);
+
 
         collapsingToolbar.setTitle(name);
 
@@ -173,34 +208,6 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         }
 
 
-        ivTeaser.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                try {
-                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/watch?v=" + videos.get(0).get(TAG_KEY)));
-                    startActivity(browserIntent);
-                } catch (Exception e) {
-                    Toast.makeText(DetailsActivity.this, "No Teaser Available!", Toast.LENGTH_SHORT).show();
-                    Log.e("error", e.toString());
-                }
-
-            }
-        });
-
-        ivTrailer.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/watch?v=" + videos.get(1).get(TAG_KEY)));
-                    startActivity(browserIntent);
-                } catch (Exception e) {
-                    Toast.makeText(DetailsActivity.this, "No Trailer Available!", Toast.LENGTH_SHORT).show();
-                    Log.e("error", e.toString());
-                }
-            }
-        });
-
 
         if (isFav) {
 
@@ -209,7 +216,6 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         }
 
     }
-
 
     // Check if network connection is available
     public boolean isNetworkOnline() {
@@ -248,11 +254,8 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_details, menu);
 
-
-
         return true;
     }
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -287,7 +290,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         values.put(MovieProvider.NAME,
                 name);
         values.put(MovieProvider.DESCRIPTION, description);
-        values.put(MovieProvider.DATE, tvDate.getText().toString());
+        values.put(MovieProvider.DATE, date);
         values.put(MovieProvider.RATING, rating);
         values.put(MovieProvider.REVIEW, tvReview.getText().toString());
         values.put(MovieProvider.POSTER, thumb_array);
@@ -308,6 +311,18 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         int rows = getContentResolver().delete(MovieProvider.CONTENT_URI, "id=?", new String[]{movie_id});
         Toast.makeText(this, "Removed from favourites", Toast.LENGTH_SHORT).show();
 
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+        try {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/watch?v=" + videos.get(position).get(TAG_KEY)));
+            startActivity(browserIntent);
+        } catch (Exception e) {
+            Toast.makeText(DetailsActivity.this, "Video not available!", Toast.LENGTH_SHORT).show();
+            Log.e("error", e.toString());
+        }
     }
 
     @Override
@@ -364,11 +379,47 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
 
         // Checks the orientation of the screen
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            ivPoster.setImageBitmap(Bitmap.createScaledBitmap(poster, ivPoster.getWidth(), ivPoster.getHeight(), false));
+
 
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            ivPoster.setImageBitmap(Bitmap.createScaledBitmap(poster, ivPoster.getWidth(), ivPoster.getHeight(), false));
 
+        }
+    }
+
+    public class ListViewAdapter extends BaseAdapter {
+
+        @Override
+        public int getCount() {
+            Log.w("Total vids : ", "=" + videos.size());
+            return videos.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return null;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return 0;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+
+            View v = convertView;
+
+            if (v == null) {
+                LayoutInflater inflater = (LayoutInflater) getApplicationContext()
+                        .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                v = inflater.inflate(R.layout.custom_row, parent, false);
+            }
+
+            TextView tvList = (TextView) v.findViewById(R.id.tvList);
+            tvList.setText(videos.get(position).get(TAG_NAME));
+
+
+            return v;
         }
     }
 
@@ -384,12 +435,6 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
 
         @Override
         protected Void doInBackground(Void... arg0) {
-            // Creating service handler class instance
-            /*ServiceHandler sh = new ServiceHandler();
-
-            // Making a request to url and getting response
-            String jsonStr = sh.makeServiceCall("http://api.themoviedb.org/3/movie/" + movie_id + "/images?api_key=3545a57a2f23dac5f3a1a0ddb84aa0df", ServiceHandler.GET);*/
-
 
             String url = "http://api.themoviedb.org/3/movie/" + movie_id + "/images?api_key=3545a57a2f23dac5f3a1a0ddb84aa0df";
             String jsonStr = null;
@@ -523,21 +568,14 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
                     for (int i = 0; i < dataArray.length(); i++) {
                         JSONObject c = dataArray.getJSONObject(i);
 
-
                         String author = c.getString(TAG_AUTHOR);
-
                         String content = c.getString(TAG_CONTENT);
 
-
-                        // tmp hashmap for single movie
                         HashMap<String, String> review = new HashMap<String, String>();
 
-                        // adding each child node to HashMap key => value
                         review.put(TAG_AUTHOR, author);
                         review.put(TAG_CONTENT, content);
 
-
-                        // adding movie to movie list
                         reviews.add(review);
                     }
                 } catch (JSONException e) {
@@ -554,12 +592,6 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         @Override
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
-            // Dismiss the progress dialog
-
-            /**
-             * Updating parsed JSON data into ListView
-             * */
-
 
             if (reviews.size() > 0) {
 
@@ -584,25 +616,22 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
             super.onPreExecute();
             // Showing progress dialog
 
-
         }
 
         @Override
         protected Void doInBackground(Void... arg0) {
-            // Creating service handler class instance
-
 
             String url = "http://api.themoviedb.org/3/movie/" + movie_id + "/videos?api_key=3545a57a2f23dac5f3a1a0ddb84aa0df";
             String jsonStr = null;
 
             OkHttpClient client = new OkHttpClient();
 
-
             Request request = new Request.Builder()
                     .url(url)
                     .build();
 
             Response response = null;
+
             try {
                 response = client.newCall(request).execute();
                 jsonStr = response.body().string();
@@ -610,6 +639,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
                 e.printStackTrace();
                 Log.d("Response", "Error: " + e);
             }
+
             Log.d("Response: ", "> " + jsonStr);
 
             if (jsonStr != null) {
@@ -628,16 +658,11 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
 
                         String name = c.getString(TAG_NAME);
 
-
-                        // tmp hashmap for single movie
                         HashMap<String, String> video = new HashMap<String, String>();
 
-                        // adding each child node to HashMap key => value
                         video.put(TAG_KEY, key);
                         video.put(TAG_NAME, name);
 
-
-                        // adding movie to movie list
                         videos.add(video);
                     }
                 } catch (JSONException e) {
@@ -654,35 +679,15 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         @Override
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
-            // Dismiss the progress dialog
 
-            /**
-             * Updating parsed JSON data into ListView
-             * */
-
-            if (videos.size() > 0) {
-            try {
-
-                tvTeaser.setText(videos.get(0).get(TAG_NAME));
-                tvTrailer.setText(videos.get(1).get(TAG_NAME));
-
-                Picasso.with(getApplicationContext()).load("http://img.youtube.com/vi/" + videos.get(0).get(TAG_KEY) + "/default.jpg").placeholder(R.drawable.default_placeholder).into(ivTeaser);
-                Picasso.with(getApplicationContext()).load("http://img.youtube.com/vi/" + videos.get(1).get(TAG_KEY) + "/default.jpg").placeholder(R.drawable.default_placeholder).into(ivTrailer);
-
-            } catch (Exception e) {
-                Log.e("error", e.toString());
-            }
-            } else {
-                tvTeaser.setVisibility(View.INVISIBLE);
-                tvTrailer.setVisibility(View.INVISIBLE);
-            }
-
+            lvVids.setAdapter(new ListViewAdapter());
+            setListViewHeightBasedOnChildren(lvVids);
+            lvVids.setVisibility(View.VISIBLE);
         }
 
     }
 
     private class SerachYTS extends AsyncTask<Void, Void, Void> {
-
 
         String key;
 
@@ -698,18 +703,17 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         @Override
         protected Void doInBackground(Void... params) {
 
-
             String url = "https://getstrike.net/api/v2/torrents/search/?phrase=" + name.replace(" ", "%20");
             String jsonStr = null;
 
             OkHttpClient client = new OkHttpClient();
-
 
             Request request = new Request.Builder()
                     .url(url)
                     .build();
 
             Response response = null;
+
             try {
                 response = client.newCall(request).execute();
                 jsonStr = response.body().string();
@@ -770,12 +774,9 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
 
             if (c.moveToFirst()) {
                 do {
-
-
                     review = c.getString(c.getColumnIndex(MovieProvider.REVIEW));
                     big = c.getBlob(9);
                     thumbDB = c.getBlob(8);
-
 
                 } while (c.moveToNext());
             }
@@ -787,19 +788,16 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         @Override
         protected void onPostExecute(Void aVoid) {
 
-
             loadingComplete = true;
             tvReview.setText(review);
             ivThumb.setImageBitmap(DBBitmapUtility.getImage(thumbDB));
             ivPoster.setImageBitmap(DBBitmapUtility.getImage(big));
-            tvTeaser.setText("Not Available Offline");
-            tvTrailer.setText("Not Available Offline");
+
             ivTrailer.setVisibility(View.GONE);
             ivTeaser.setVisibility(View.GONE);
             super.onPostExecute(aVoid);
         }
     }
-
 }
 
 

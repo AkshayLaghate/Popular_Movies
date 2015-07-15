@@ -13,6 +13,8 @@
              which is used to tint widgets -->
         <item name="colorAccent">@color/accent_color</item>
 
+        <item name="android:typeface">serif</item>
+
         <item name="android:textColorPrimary">@color/grey_white_1000</item>
         <item name="android:textColorPrimaryInverse">@color/grey_black_1000</item>
         <item name="android:actionMenuTextColor">@color/grey_white_1000</item>

@@ -2,6 +2,7 @@ package com.nano.popularmovies;
 
 import android.app.Application;
 
+import com.nano.popularmovies.Utils.FontsOverride;
 import com.squareup.leakcanary.LeakCanary;
 
 /**
@@ -13,6 +14,6 @@ public class MyApp extends Application {
     public void onCreate() {
         super.onCreate();
         LeakCanary.install(this);
-
+        FontsOverride.setDefaultFont(this, "SERIF", "noto_reg.ttf");
     }
 }

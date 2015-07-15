@@ -12,6 +12,8 @@
              which is used to tint widgets -->
         <item name="colorAccent">@color/accent_color</item>
 
+        <item name="android:typeface">serif</item>
+
         <item name="android:textColorPrimary">@color/grey_white_1000</item>
         <item name="android:textColorPrimaryInverse">@color/grey_black_1000</item>
         <item name="android:actionMenuTextColor">@color/grey_white_1000</item>
@@ -26,7 +28,8 @@
     </style>
 
     <style name="card.native.base_simple_title">
-        <item name="android:textStyle">bold</item>
+
+    <item name="android:textStyle">bold</item>
         <item name="android:textColor">#000</item>
         <item name="android:fontFamily">@string/card_native_font_fontFamily_main_content</item>
         <item name="android:textSize">15sp</item>
