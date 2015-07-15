@@ -5,11 +5,6 @@
     tools:context=".DetailsActivity">
 
 
-    <item
-        android:id="@+id/addToFav"
-        android:orderInCategory="10"
-        android:title="@string/action_fav"
-        app:showAsAction="never" />
 
     <item
         android:id="@+id/searchYTS"

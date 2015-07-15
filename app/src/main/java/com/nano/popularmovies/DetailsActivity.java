@@ -80,7 +80,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
 
 
     boolean isFav, loadingComplete = false;
-    MenuItem fav;
+
 
     ProgressDialog pd;
 
@@ -247,13 +247,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_details, menu);
-        fav = menu.findItem(R.id.addToFav);
 
-
-        if (isFav) {
-            fav.setTitle("Remove from Favourites");
-
-        }
 
 
         return true;
@@ -272,30 +266,6 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
 
                 break;
 
-            case R.id.addToFav:
-
-                if (loadingComplete) {
-                    if (isFav) {
-
-                        fav.setTitle("Add to Favourites");
-
-                        favMovies.remove(movie_id);
-                        removeFromFav();
-                    } else {
-
-                        fav.setTitle("Remove from Favourites");
-
-                        favMovies.add(movie_id);
-                        saveMovieToFav();
-                    }
-                } else
-                    Toast.makeText(this, "Loading details... Wait some time", Toast.LENGTH_SHORT).show();
-
-
-                tiny.putListString("movies", favMovies);
-
-
-                break;
 
             case R.id.searchYTS:
                 new SerachYTS().execute();
@@ -702,6 +672,9 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
             } catch (Exception e) {
                 Log.e("error", e.toString());
             }
+            } else {
+                tvTeaser.setVisibility(View.INVISIBLE);
+                tvTrailer.setVisibility(View.INVISIBLE);
             }
 
         }
