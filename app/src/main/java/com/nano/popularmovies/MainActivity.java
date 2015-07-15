@@ -41,6 +41,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
 import it.gmariotti.cardslib.library.cards.material.MaterialLargeImageCard;
 import it.gmariotti.cardslib.library.view.CardViewNative;
 
@@ -50,7 +52,6 @@ public class MainActivity extends AppCompatActivity {
     // JSON Node names
 
     private static final String TAG_ID = "id";
-
     private static final String TAG_NAME = "original_title";
     private static final String TAG_DESCRIPTION = "overview";
     private static final String TAG_THUMBNAIL = "poster_path";
@@ -61,7 +62,9 @@ public class MainActivity extends AppCompatActivity {
 
     Bitmap[] imgs;
 
+    @Bind(R.id.toolbar)
     Toolbar bar;
+    @Bind(R.id.grid_view)
     StaggeredGridView sgridView;
 
     ProgressDialog pd;
@@ -87,14 +90,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Toast.makeText(this, "Memory Available = " + Runtime.getRuntime().maxMemory() / 1000, Toast.LENGTH_SHORT).show();
+        ButterKnife.bind(this);
+
+        // Toast.makeText(this, "Memory Available = " + Runtime.getRuntime().maxMemory() / 1000, Toast.LENGTH_SHORT).show();
 
         metrics = this.getResources().getDisplayMetrics();
         width = metrics.widthPixels;
         height = metrics.heightPixels;
 
-
-        bar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(bar);
         bar.setTitle("Most Popular");
 
@@ -103,9 +106,6 @@ public class MainActivity extends AppCompatActivity {
         pd = new ProgressDialog(MainActivity.this);
 
         pd.setCancelable(false);
-
-        sgridView = (StaggeredGridView) findViewById(R.id.grid_view);
-
 
         movieList = new ArrayList<HashMap<String, String>>();
 
@@ -139,7 +139,6 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View v,
                                     int position, long id) {
 
-                //showDetails(position);
                 openDetails(position);
             }
         });
@@ -163,7 +162,6 @@ public class MainActivity extends AppCompatActivity {
 
         startActivity(i);
 
-
     }
 
 
@@ -177,12 +175,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
 
-
-        //noinspection SimplifiableIfStatement
         switch (item.getItemId()) {
 
 
@@ -321,9 +314,7 @@ public class MainActivity extends AppCompatActivity {
         // create a new ImageView for each item referenced by the Adapter
         public View getView(final int position, View convertView, ViewGroup parent) {
 
-
             convertView = null;
-
 
             if (convertView == null) {
                 // if it's not recycled, initialize some attributes
@@ -332,11 +323,6 @@ public class MainActivity extends AppCompatActivity {
                 LayoutInflater inflater = (LayoutInflater) getApplicationContext()
                         .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 convertView = inflater.inflate(R.layout.cardlib_card, parent, false);
-
-
-                // get layout from mobile.xml
-
-                //v.setLayoutParams(new GridView.LayoutParams(width / 2, height / 2));
 
             }
 
@@ -365,9 +351,7 @@ public class MainActivity extends AppCompatActivity {
 
             return convertView;
 
-
         }
-
 
     }
 
@@ -378,7 +362,6 @@ public class MainActivity extends AppCompatActivity {
         protected void onPreExecute() {
             // TODO Auto-generated method stub
             super.onPreExecute();
-
 
         }
 
@@ -469,15 +452,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
-            // Dismiss the progress dialog
-
-            /**
-             * Updating parsed JSON data into ListView
-             * */
-
 
             new LoadImgs().execute();
-
 
         }
 
@@ -485,7 +461,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     private class LoadFavs extends AsyncTask<Void, Void, Void> {
-
 
         @Override
         protected void onPreExecute() {
@@ -507,7 +482,6 @@ public class MainActivity extends AppCompatActivity {
 
             if (c.moveToFirst()) {
                 do {
-
 
                     HashMap<String, String> movie = new HashMap<>();
                     movie.put(TAG_ID, c.getString(c.getColumnIndex(MovieProvider.ID)));
@@ -532,13 +506,11 @@ public class MainActivity extends AppCompatActivity {
                 imgs[i] = DBBitmapUtility.getImage(thumbList.get(i));
             }
 
-
             return null;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
-
 
             pd.dismiss();
             sgridView.setAdapter(adapter);

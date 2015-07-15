@@ -34,7 +34,6 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -55,6 +54,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+
 /**
  * Created by Akki on 19/06/15.
  */
@@ -66,30 +68,42 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
     private static final String TAG_NAME = "name";
     private static final String TAG_AUTHOR = "author";
     private static final String TAG_CONTENT = "content";
+
+    @Bind(R.id.toolbar)
     Toolbar bar;
+    @Bind(R.id.appbar)
     AppBarLayout appBar;
+    @Bind(R.id.collapsing_toolbar)
     CollapsingToolbarLayout collapsingToolbar;
+    @Bind(R.id.fab)
     FloatingActionButton fab;
-    ScrollView scrollView;
-    String movie_id, name, description, date, rating, poster_path, review;
-    ImageView ivPoster, ivThumb, ivTeaser, ivTrailer;
-    TextView tvDesc, tvDate, tvRating, tvReview;
+    @Bind(R.id.colHeader)
+    ImageView ivPoster;
+    @Bind(R.id.ivThumbNew)
+    ImageView ivThumb;
+    @Bind(R.id.description_data)
+    TextView tvDesc;
+    @Bind(R.id.tvDateNew)
+    TextView tvDate;
+    @Bind(R.id.tvRatingNew)
+    TextView tvRating;
+    @Bind(R.id.reviews_details)
+    TextView tvReview;
+    @Bind(R.id.lvVids)
     ListView lvVids;
+
     JSONArray dataArray = null;
     ArrayList<String> posterList, favMovies;
     ArrayList<HashMap<String, String>> reviews, videos;
 
+    String movie_id, name, description, date, rating, poster_path, review;
 
     Bitmap poster;
     Bitmap thumb;
 
     TinyDB tiny;
 
-
-
-
     boolean isFav, loadingComplete = false;
-
 
     ProgressDialog pd;
 
@@ -127,7 +141,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
 
         setContentView(R.layout.detail_new);
 
-
+        ButterKnife.bind(this);
         tintManager = new SystemBarTintManager(this);
         // enable status bar tint
         tintManager.setStatusBarTintEnabled(true);
@@ -140,11 +154,8 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         setSupportActionBar(bar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
-        collapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
-        fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(this);
-        appBar = (AppBarLayout) findViewById(R.id.appbar);
 
+        fab.setOnClickListener(this);
 
         Bundle bag = getIntent().getExtras();
         movie_id = bag.getString("movie_id");
@@ -153,8 +164,6 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         date = bag.getString("movie_release");
         rating = bag.getString("movie_rating");
         poster_path = bag.getString("poster_path");
-
-
 
         tiny = new TinyDB(this);
         posterList = new ArrayList<>();
@@ -166,33 +175,17 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
 
         isFav = checkFav();
 
-        scrollView = (ScrollView) findViewById(R.id.scrollView);
-        ivPoster = (ImageView) findViewById(R.id.colHeader);
         ivPoster.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        ivTeaser = (ImageView) findViewById(R.id.ivTeaser);
-        ivTrailer = (ImageView) findViewById(R.id.ivTrailerThumb);
-        ivThumb = (ImageView) findViewById(R.id.ivThumbNew);
         ivThumb.setScaleType(ImageView.ScaleType.FIT_CENTER);
 
-
-
-        tvDesc = (TextView) findViewById(R.id.description_data);
-        tvDate = (TextView) findViewById(R.id.tvDateNew);
-        tvRating = (TextView) findViewById(R.id.tvRatingNew);
-        tvReview = (TextView) findViewById(R.id.reviews_details);
-
-
-        lvVids = (ListView) findViewById(R.id.lvVids);
         lvVids.setOnItemClickListener(this);
         lvVids.setVisibility(View.INVISIBLE);
-
 
         collapsingToolbar.setTitle(name);
 
         tvDesc.setText(description);
         tvDate.setText("Release Date : " + date);
         tvRating.setText("Rating : " + rating + "/10");
-
 
         if (isNetworkOnline()) {
 
@@ -204,15 +197,10 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
             if (isFav) {
                 new LoadOfflineData().execute();
             }
-
         }
 
-
-
         if (isFav) {
-
             fab.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.star_filled));
-
         }
 
     }
@@ -260,7 +248,6 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-
         switch (item.getItemId()) {
             case android.R.id.home:
 
@@ -269,17 +256,12 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
 
                 break;
 
-
-            case R.id.searchYTS:
-                new SerachYTS().execute();
-                break;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
     private void saveMovieToFav() {
-
 
         byte[] thumb_array = DBBitmapUtility.getBytes(thumb);
         byte[] poster_array = DBBitmapUtility.getBytes(poster);
@@ -297,13 +279,11 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         values.put(MovieProvider.BIG, poster_array);
         values.put(MovieProvider.POSTER_PATH, poster_path);
 
-
         Uri uri = getContentResolver().insert(
                 MovieProvider.CONTENT_URI, values);
 
         Toast.makeText(getBaseContext(),
                 "Added to favourites", Toast.LENGTH_LONG).show();
-
     }
 
     private void removeFromFav() {
@@ -330,7 +310,6 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         super.onBackPressed();
 
     }
-
 
     public void generatePallete(Bitmap bmp) {
 
@@ -429,7 +408,6 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         protected void onPreExecute() {
             super.onPreExecute();
             // Showing progress dialog
-
 
         }
 
@@ -687,84 +665,6 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
 
     }
 
-    private class SerachYTS extends AsyncTask<Void, Void, Void> {
-
-        String key;
-
-        @Override
-        protected void onPreExecute() {
-            pd = new ProgressDialog(DetailsActivity.this);
-            pd.setMessage("Searching torrents...");
-            pd.setCancelable(false);
-            pd.show();
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-
-            String url = "https://getstrike.net/api/v2/torrents/search/?phrase=" + name.replace(" ", "%20");
-            String jsonStr = null;
-
-            OkHttpClient client = new OkHttpClient();
-
-            Request request = new Request.Builder()
-                    .url(url)
-                    .build();
-
-            Response response = null;
-
-            try {
-                response = client.newCall(request).execute();
-                jsonStr = response.body().string();
-            } catch (IOException e) {
-                e.printStackTrace();
-                Log.d("Response", "Error: " + e);
-            }
-
-            Log.d("Response: ", "> " + jsonStr);
-
-            if (jsonStr != null) {
-                try {
-                    JSONObject jsonObj = new JSONObject(jsonStr);
-
-                    dataArray = jsonObj.getJSONArray("torrents");
-
-                    JSONObject data = dataArray.getJSONObject(0);
-
-
-                    key = data.getString("magnet_uri");
-
-
-                    Log.e("magnet", key);
-
-
-                } catch (JSONException e) {
-                    Log.e("error", e.toString());
-
-                }
-            } else {
-                Log.e("ServiceHandler", "Couldn't get any data from the url");
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            pd.dismiss();
-            super.onPostExecute(aVoid);
-
-            try {
-                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(key));
-                startActivity(browserIntent);
-            } catch (Exception e) {
-                Toast.makeText(DetailsActivity.this, "No Torrent found", Toast.LENGTH_SHORT).show();
-                Log.e("error", e.toString());
-            }
-        }
-    }
-
     private class LoadOfflineData extends AsyncTask<Void, Void, Void> {
 
         @Override
@@ -792,9 +692,6 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
             tvReview.setText(review);
             ivThumb.setImageBitmap(DBBitmapUtility.getImage(thumbDB));
             ivPoster.setImageBitmap(DBBitmapUtility.getImage(big));
-
-            ivTrailer.setVisibility(View.GONE);
-            ivTeaser.setVisibility(View.GONE);
             super.onPostExecute(aVoid);
         }
     }

@@ -230,63 +230,7 @@
                         android:textSize="20sp"
                         android:textStyle="bold" />
 
-                    <!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                        android:layout_width="fill_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@+id/textView"
-                        android:layout_marginTop="10dp"
-                        android:orientation="vertical">
 
-                        <TextView
-                            android:id="@+id/tvTeaser"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="left|top"
-                            android:background="#a3000000"
-                            android:padding="5dp"
-                            android:paddingLeft="5dp"
-                            android:text="Teaser"
-                            android:textColor="#ffffffff"
-                            android:textSize="20sp" />
-
-                        <ImageView
-                            android:id="@+id/ivTeaser"
-                            android:layout_width="200dp"
-                            android:layout_height="200dp"
-                            android:layout_gravity="left|top"
-                            android:alpha="1"
-                            android:scaleType="centerCrop"
-                            android:src="@drawable/default_placeholder" />
-
-                        <View
-                            android:layout_width="fill_parent"
-                            android:layout_height="1dp"
-                            android:layout_marginTop="10dp"
-                            android:background="@android:color/darker_gray" />
-
-                        <TextView
-                            android:id="@+id/tvTrailer"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="bottom|left"
-                            android:layout_marginTop="10dp"
-                            android:background="#a3000000"
-                            android:padding="5dp"
-                            android:paddingLeft="5dp"
-                            android:text="Trailer"
-                            android:textColor="#ffffffff"
-                            android:textSize="20sp" />
-
-                        <ImageView
-                            android:id="@+id/ivTrailerThumb"
-                            android:layout_width="200dp"
-                            android:layout_height="200dp"
-                            android:layout_gravity="bottom|left"
-                            android:alpha="1"
-                            android:scaleType="centerCrop"
-                            android:src="@drawable/default_placeholder" />
-
-                    </LinearLayout>-->
 
                     <ListView
                         android:id="@+id/lvVids"
