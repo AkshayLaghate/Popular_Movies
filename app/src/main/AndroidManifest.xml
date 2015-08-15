@@ -37,17 +37,6 @@
             android:name=".Utils.MovieProvider"
             android:authorities="com.nano.provider.popularmovies" />
 
-        <activity
-            android:name=".MovieListActivity"
-            android:label="@string/title_movie_list"></activity>
-        <activity
-            android:name=".MovieDetailActivity"
-            android:label="@string/title_movie_detail"
-            android:parentActivityName=".MovieListActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.nano.popularmovies.MovieListActivity" />
-        </activity>
     </application>
 
 </manifest>
