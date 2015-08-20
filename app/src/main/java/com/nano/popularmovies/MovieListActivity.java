@@ -2,7 +2,11 @@ package com.nano.popularmovies;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+
+import butterknife.Bind;
 
 
 /**
@@ -21,9 +25,11 @@ import android.support.v4.app.FragmentActivity;
  * {@link MovieListFragment.Callbacks} interface
  * to listen for item selections.
  */
-public class MovieListActivity extends FragmentActivity
+public class MovieListActivity extends ActionBarActivity
         implements MovieListFragment.Callbacks {
 
+    @Bind(R.id.toolbar)
+    Toolbar bar;
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
@@ -50,7 +56,93 @@ public class MovieListActivity extends FragmentActivity
         }
 
         // TODO: If exposing deep links into your app, handle intents here.
+
+        bar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(bar);
+
     }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        return true;
+    }
+
+    /*@Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+
+
+            case R.id.refresh:
+
+                if (isNetworkOnline()) {
+                    new GetMovies().execute(query);
+                } else {
+                    Toast.makeText(MovieListActivity.this, "Check Network Connection and try again!",
+                            Toast.LENGTH_SHORT).show();
+                }
+
+                break;
+
+            case R.id.menuSortNewest:
+
+                item.setChecked(true);
+
+                movies = null;
+                movieList.clear();
+
+                query = query_Popular;
+
+                if (isNetworkOnline()) {
+
+                    new GetMovies().execute(query_Popular);
+                    bar.setTitle("Most Popular");
+                } else {
+                    Toast.makeText(MovieListActivity.this, "Check Network Connection and try again!",
+                            Toast.LENGTH_SHORT).show();
+
+                }
+
+                break;
+
+            case R.id.menuSortRating:
+
+                item.setChecked(true);
+                movies = null;
+                movieList.clear();
+
+                query = query_Rating;
+
+                if (isNetworkOnline()) {
+
+                    new GetMovies().execute(query_Rating);
+                    bar.setTitle("Highest Rated");
+                } else {
+                    Toast.makeText(MovieListActivity.this, "Check Network Connection and try again!",
+                            Toast.LENGTH_SHORT).show();
+                }
+
+                break;
+
+            case R.id.menuSortFav:
+
+                item.setChecked(true);
+
+                imgs = null;
+                movieList.clear();
+
+                new LoadFavs().execute();
+                bar.setTitle("Favourites");
+                break;
+        }
+
+
+        return super.onOptionsItemSelected(item);
+    }*/
 
     /**
      * Callback method from {@link MovieListFragment.Callbacks}
@@ -78,4 +170,6 @@ public class MovieListActivity extends FragmentActivity
             startActivity(detailIntent);
         }
     }
+
+
 }

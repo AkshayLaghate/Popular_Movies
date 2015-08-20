@@ -53,7 +53,7 @@ public class MovieDetailFragment extends Fragment {
 
         // Show the dummy content as text in a TextView.
         if (mItem != null) {
-            ((TextView) rootView.findViewById(R.id.movie_detail)).setText(mItem.content);
+            ((TextView) rootView.findViewById(R.id.movie_detail)).setText(getArguments().getString(ARG_ITEM_ID));
         }
 
         return rootView;
