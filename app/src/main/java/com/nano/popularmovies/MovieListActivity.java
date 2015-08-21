@@ -160,7 +160,7 @@ public class MovieListActivity extends ActionBarActivity
             // fragment transaction.
             Bundle arguments = new Bundle();
             arguments.putString(MovieDetailFragment.ARG_ITEM_ID, "ID : " + id);
-            arguments.putString(MovieDetailFragment.ARG_MOVIE_NAME, "Name : " + name);
+            arguments.putString(MovieDetailFragment.ARG_MOVIE_NAME, name);
             arguments.putString(MovieDetailFragment.ARG_MOVIE_DESC, "Desc : " + description);
             arguments.putString(MovieDetailFragment.ARG_MOVIE_DATE, "Date : " + date);
             arguments.putString(MovieDetailFragment.ARG_MOVIE_RATING, "Rating : " + rating);
