@@ -16,8 +16,12 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -74,43 +78,36 @@ public class MovieListFragment extends Fragment {
      * A dummy implementation of the {@link Callbacks} interface that does
      * nothing. Used only when this fragment is not attached to an activity.
      */
-    private static Callbacks sDummyCallbacks = new Callbacks() {
-        @Override
-        public void onItemSelected(String id) {
-        }
-    };
-    Bitmap[] imgs;
 
+
+    OnMovieSelectedListener mCallback;
+    Bitmap[] imgs;
     @Bind(R.id.grid_view)
     StaggeredGridView sgridView;
-
     ProgressDialog pd;
     ImageAdapter adapter;
     JSONArray movies = null;
     ArrayList<HashMap<String, String>> movieList;
-
     DisplayMetrics metrics;
     int height, width;
     SwipeRefreshLayout swipe;
     TinyDB tiny;
     ArrayList<byte[]> poster_list;
-
     List<Result> results;
     String query_Rating = "vote_average.desc";
     String query_Popular = "popularity.desc";
     String query = query_Popular;
+    private Callbacks movieListCallback;
     private String api_key = "3545a57a2f23dac5f3a1a0ddb84aa0df";
-
-    /**
-     * The fragment's current callback object, which is notified of list item
-     * clicks.
-     */
-    private Callbacks mCallbacks = sDummyCallbacks;
     /**
      * The current activated item position. Only used on tablets.
      */
     private int mActivatedPosition = GridView.INVALID_POSITION;
 
+    /**
+     * The fragment's current callback object, which is notified of list item
+     * clicks.
+     */
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -123,7 +120,7 @@ public class MovieListFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         // TODO: replace with a real list adapter.
-
+        setHasOptionsMenu(true);
     }
 
     @Nullable
@@ -134,6 +131,7 @@ public class MovieListFragment extends Fragment {
         ButterKnife.bind(this, v);
 
         // Toast.makeText(this, "Memory Available = " + Runtime.getRuntime().maxMemory() / 1000, Toast.LENGTH_SHORT).show();
+
 
         metrics = this.getResources().getDisplayMetrics();
         width = metrics.widthPixels;
@@ -179,7 +177,9 @@ public class MovieListFragment extends Fragment {
                                     int position, long id) {
 
                 //openDetails(position);
-                mCallbacks.onItemSelected("Position :" + position);
+                mCallback.onMovieSelected(movieList.get(position).get(TAG_ID), movieList.get(position).get(TAG_NAME),
+                        movieList.get(position).get(TAG_DESCRIPTION), movieList.get(position).get(TAG_DATE),
+                        movieList.get(position).get(TAG_RATING), movieList.get(position).get(TAG_THUMBNAIL));
                 setActivatedPosition(position);
             }
         });
@@ -191,6 +191,83 @@ public class MovieListFragment extends Fragment {
     }
 
     @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        // TODO Add your menu entries here
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.refresh:
+
+                if (isNetworkOnline()) {
+                    new GetMovies().execute(query);
+                } else {
+                    Toast.makeText(getActivity(), "Check Network Connection and try again!",
+                            Toast.LENGTH_SHORT).show();
+                }
+
+                break;
+
+            case R.id.menuSortNewest:
+
+                item.setChecked(true);
+
+                movies = null;
+                movieList.clear();
+
+                query = query_Popular;
+
+                if (isNetworkOnline()) {
+
+                    new GetMovies().execute(query_Popular);
+                    // bar.setTitle("Most Popular");
+                    ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Most Popular");
+                } else {
+                    Toast.makeText(getActivity(), "Check Network Connection and try again!",
+                            Toast.LENGTH_SHORT).show();
+
+                }
+
+                break;
+
+            case R.id.menuSortRating:
+
+                item.setChecked(true);
+                movies = null;
+                movieList.clear();
+
+                query = query_Rating;
+
+                if (isNetworkOnline()) {
+
+                    new GetMovies().execute(query_Rating);
+                    //bar.setTitle("Highest Rated");
+                    ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Highest Rated");
+                } else {
+                    Toast.makeText(getActivity(), "Check Network Connection and try again!",
+                            Toast.LENGTH_SHORT).show();
+                }
+
+                break;
+
+            case R.id.menuSortFav:
+
+                item.setChecked(true);
+
+                imgs = null;
+                movieList.clear();
+
+                new LoadFavs().execute();
+                //bar.setTitle("Favourites");
+                ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Favourites");
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
     }
@@ -199,12 +276,14 @@ public class MovieListFragment extends Fragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
 
-        // Activities containing this fragment must implement its callbacks.
-        if (!(activity instanceof Callbacks)) {
-            throw new IllegalStateException("Activity must implement fragment's callbacks.");
-        }
 
-        mCallbacks = (Callbacks) activity;
+        try {
+            mCallback = (OnMovieSelectedListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement OnHeadlineSelectedListener");
+        }
+        // Activities containing this fragment must implement its callbacks.
     }
 
     @Override
@@ -212,7 +291,6 @@ public class MovieListFragment extends Fragment {
         super.onDetach();
 
         // Reset the active callbacks interface to the dummy implementation.
-        mCallbacks = sDummyCallbacks;
     }
 
     @Override
@@ -300,6 +378,12 @@ public class MovieListFragment extends Fragment {
 
     }
 
+    // Container Activity must implement this interface
+    public interface OnMovieSelectedListener {
+        public void onMovieSelected(String id, String name, String description, String date, String rating, String thumb);
+
+    }
+
     /**
      * A callback interface that all activities containing this fragment must
      * implement. This mechanism allows activities to be notified of item
@@ -364,7 +448,6 @@ public class MovieListFragment extends Fragment {
 
                                     Drawable d = new BitmapDrawable(getResources(), imgs[position]);
                                     mview.setBackground(d);
-
                                 }
 
                             }).build();

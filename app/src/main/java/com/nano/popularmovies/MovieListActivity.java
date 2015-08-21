@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 
 import butterknife.Bind;
@@ -26,7 +27,7 @@ import butterknife.Bind;
  * to listen for item selections.
  */
 public class MovieListActivity extends ActionBarActivity
-        implements MovieListFragment.Callbacks {
+        implements MovieListFragment.OnMovieSelectedListener {
 
     @Bind(R.id.toolbar)
     Toolbar bar;
@@ -148,14 +149,22 @@ public class MovieListActivity extends ActionBarActivity
      * Callback method from {@link MovieListFragment.Callbacks}
      * indicating that the item with the given ID was selected.
      */
+
+
     @Override
-    public void onItemSelected(String id) {
+    public void onMovieSelected(String id, String name, String description, String date, String rating, String thumb) {
+        Log.e("Name : ", "" + name);
         if (mTwoPane) {
             // In two-pane mode, show the detail view in this activity by
             // adding or replacing the detail fragment using a
             // fragment transaction.
             Bundle arguments = new Bundle();
-            arguments.putString(MovieDetailFragment.ARG_ITEM_ID, id);
+            arguments.putString(MovieDetailFragment.ARG_ITEM_ID, "ID : " + id);
+            arguments.putString(MovieDetailFragment.ARG_MOVIE_NAME, "Name : " + name);
+            arguments.putString(MovieDetailFragment.ARG_MOVIE_DESC, "Desc : " + description);
+            arguments.putString(MovieDetailFragment.ARG_MOVIE_DATE, "Date : " + date);
+            arguments.putString(MovieDetailFragment.ARG_MOVIE_RATING, "Rating : " + rating);
+            arguments.putString(MovieDetailFragment.ARG_MOVIE_THUMB, "Thumb : " + thumb);
             MovieDetailFragment fragment = new MovieDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()
@@ -166,10 +175,8 @@ public class MovieListActivity extends ActionBarActivity
             // In single-pane mode, simply start the detail activity
             // for the selected item ID.
             Intent detailIntent = new Intent(this, MovieDetailActivity.class);
-            detailIntent.putExtra(MovieDetailFragment.ARG_ITEM_ID, id);
+            detailIntent.putExtra(MovieDetailFragment.ARG_ITEM_ID, name);
             startActivity(detailIntent);
         }
     }
-
-
 }
