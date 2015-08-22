@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -177,6 +176,7 @@ public class MovieListFragment extends Fragment {
                                     int position, long id) {
 
                 //openDetails(position);
+                sgridView.getChildAt(position).setBackgroundColor(getResources().getColor(R.color.grey_500));
                 mCallback.onMovieSelected(movieList.get(position).get(TAG_ID), movieList.get(position).get(TAG_NAME),
                         movieList.get(position).get(TAG_DESCRIPTION), movieList.get(position).get(TAG_DATE),
                         movieList.get(position).get(TAG_RATING), movieList.get(position).get(TAG_THUMBNAIL));
@@ -201,6 +201,8 @@ public class MovieListFragment extends Fragment {
         switch (item.getItemId()) {
             case R.id.refresh:
 
+                movies = null;
+                movieList.clear();
                 if (isNetworkOnline()) {
                     new GetMovies().execute(query);
                 } else {
@@ -444,14 +446,10 @@ public class MovieListFragment extends Fragment {
                             .useDrawableExternal(new MaterialLargeImageCard.DrawableExternal() {
                                 @Override
                                 public void setupInnerViewElements(ViewGroup viewGroup, View mview) {
-
-
-                                    Drawable d = new BitmapDrawable(getResources(), imgs[position]);
-                                    mview.setBackground(d);
+                                    mview.setBackground(new BitmapDrawable(getResources(), imgs[position]));
                                 }
 
                             }).build();
-
 
             cardView.setCard(card);
 

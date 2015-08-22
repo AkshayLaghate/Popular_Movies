@@ -19,7 +19,6 @@ import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.graphics.Palette;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -80,8 +79,6 @@ public class MovieDetailFragment extends Fragment {
     private static final String TAG_CONTENT = "content";
 
 
-    @Bind(R.id.toolbar)
-    Toolbar bar;
     @Bind(R.id.appbar)
     AppBarLayout appBar;
     @Bind(R.id.collapsing_toolbar)
@@ -223,6 +220,8 @@ public class MovieDetailFragment extends Fragment {
         date = getArguments().getString(ARG_MOVIE_DATE);
         rating = getArguments().getString(ARG_MOVIE_RATING);
         poster_path = getArguments().getString(ARG_MOVIE_THUMB);
+
+        Log.e("Id :", movie_id);
 
         tiny = new TinyDB(getActivity());
         posterList = new ArrayList<>();

@@ -159,12 +159,12 @@ public class MovieListActivity extends ActionBarActivity
             // adding or replacing the detail fragment using a
             // fragment transaction.
             Bundle arguments = new Bundle();
-            arguments.putString(MovieDetailFragment.ARG_ITEM_ID, "ID : " + id);
+            arguments.putString(MovieDetailFragment.ARG_ITEM_ID, id);
             arguments.putString(MovieDetailFragment.ARG_MOVIE_NAME, name);
-            arguments.putString(MovieDetailFragment.ARG_MOVIE_DESC, "Desc : " + description);
-            arguments.putString(MovieDetailFragment.ARG_MOVIE_DATE, "Date : " + date);
-            arguments.putString(MovieDetailFragment.ARG_MOVIE_RATING, "Rating : " + rating);
-            arguments.putString(MovieDetailFragment.ARG_MOVIE_THUMB, "Thumb : " + thumb);
+            arguments.putString(MovieDetailFragment.ARG_MOVIE_DESC, description);
+            arguments.putString(MovieDetailFragment.ARG_MOVIE_DATE, date);
+            arguments.putString(MovieDetailFragment.ARG_MOVIE_RATING, rating);
+            arguments.putString(MovieDetailFragment.ARG_MOVIE_THUMB, thumb);
             MovieDetailFragment fragment = new MovieDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()
