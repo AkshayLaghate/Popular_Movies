@@ -170,7 +170,6 @@ public class MovieDetailFragment extends Fragment {
             // to load content from a content provider.
 
         }
-        setHasOptionsMenu(true);
     }
 
     @Override

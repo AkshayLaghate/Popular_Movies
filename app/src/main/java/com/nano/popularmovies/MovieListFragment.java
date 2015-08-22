@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -176,6 +177,7 @@ public class MovieListFragment extends Fragment {
                                     int position, long id) {
 
                 //openDetails(position);
+                clearGridColor();
                 sgridView.getChildAt(position).setBackgroundColor(getResources().getColor(R.color.grey_500));
                 mCallback.onMovieSelected(movieList.get(position).get(TAG_ID), movieList.get(position).get(TAG_NAME),
                         movieList.get(position).get(TAG_DESCRIPTION), movieList.get(position).get(TAG_DATE),
@@ -188,6 +190,12 @@ public class MovieListFragment extends Fragment {
 
 
         return v;
+    }
+
+    private void clearGridColor() {
+        for (int i = 0; i < sgridView.getChildCount(); i++) {
+            sgridView.getChildAt(i).setBackgroundColor(Color.WHITE);
+        }
     }
 
     @Override
