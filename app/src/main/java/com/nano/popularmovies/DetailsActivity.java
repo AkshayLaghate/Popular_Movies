@@ -1,7 +1,6 @@
 package com.nano.popularmovies;
 
 
-import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -20,6 +19,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.Palette;
+import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -76,6 +76,8 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
     CollapsingToolbarLayout collapsingToolbar;
     @Bind(R.id.fab)
     FloatingActionButton fab;
+    @Bind(R.id.share)
+    FloatingActionButton share;
     @Bind(R.id.colHeader)
     ImageView ivPoster;
     @Bind(R.id.ivThumbNew)
@@ -104,11 +106,12 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
 
     boolean isFav, loadingComplete = false;
 
-    ProgressDialog pd;
 
     byte[] big, thumbDB;
 
     SystemBarTintManager tintManager;
+
+    private ShareActionProvider mShareActionProvider;
 
     public static void setListViewHeightBasedOnChildren(ListView listView) {
         ListAdapter listAdapter = listView.getAdapter();
@@ -130,14 +133,6 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
         listView.setLayoutParams(params);
         listView.requestLayout();
-    }
-
-    public static String humanReadableByteCount(long bytes, boolean si) {
-        int unit = si ? 1000 : 1024;
-        if (bytes < unit) return bytes + " B";
-        int exp = (int) (Math.log(bytes) / Math.log(unit));
-        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp - 1) + (si ? "" : "i");
-        return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
 
     @Override
@@ -163,6 +158,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         getSupportActionBar().setHomeButtonEnabled(true);
 
         fab.setOnClickListener(this);
+        share.setOnClickListener(this);
 
         Bundle bag = getIntent().getExtras();
         movie_id = bag.getString(MovieDetailFragment.ARG_ITEM_ID);
@@ -250,20 +246,16 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_details, menu);
 
-        return true;
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        switch (item.getItemId()) {
-            case android.R.id.home:
 
-                NavUtils.navigateUpFromSameTask(this);
-                break;
-
+        if (item.getItemId() == android.R.id.home) {
+            NavUtils.navigateUpFromSameTask(this);
         }
-
 
         return super.onOptionsItemSelected(item);
     }
@@ -353,6 +345,14 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
 
 
                 tiny.putListString("movies", favMovies);
+                break;
+
+            case R.id.share:
+                Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+                sharingIntent.setType("text/plain");
+                sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Check out this awesome trailer!");
+                sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, "https://www.youtube.com/watch?v=" + videos.get(0).get(TAG_KEY));
+                startActivity(Intent.createChooser(sharingIntent, "Share via"));
                 break;
             default:
                 break;
@@ -669,6 +669,8 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
             lvVids.setAdapter(new ListViewAdapter());
             setListViewHeightBasedOnChildren(lvVids);
             lvVids.setVisibility(View.VISIBLE);
+
+
         }
 
     }

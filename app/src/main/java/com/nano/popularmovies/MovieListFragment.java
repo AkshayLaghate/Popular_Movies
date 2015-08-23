@@ -179,7 +179,7 @@ public class MovieListFragment extends Fragment {
                 clearGridColor();
 
                 if (MovieListActivity.mTwoPane) {
-                    sgridView.getChildAt(position).setBackgroundColor(getResources().getColor(R.color.grey_500));
+                    sgridView.getChildAt(position).setBackgroundColor(getResources().getColor(R.color.indigo_300));
                 }
                 mCallback.onMovieSelected(movieList.get(position).get(TAG_ID), movieList.get(position).get(TAG_NAME),
                         movieList.get(position).get(TAG_DESCRIPTION), movieList.get(position).get(TAG_DATE),

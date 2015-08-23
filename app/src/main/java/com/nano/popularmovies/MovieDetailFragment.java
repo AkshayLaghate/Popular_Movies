@@ -83,6 +83,8 @@ public class MovieDetailFragment extends Fragment {
     CollapsingToolbarLayout collapsingToolbar;
     @Bind(R.id.fab)
     FloatingActionButton fab;
+    @Bind(R.id.share)
+    FloatingActionButton share;
     @Bind(R.id.colHeader)
     ImageView ivPoster;
     @Bind(R.id.ivThumbNew)
@@ -201,6 +203,17 @@ public class MovieDetailFragment extends Fragment {
 
 
                 tiny.putListString("movies", favMovies);
+            }
+        });
+
+        share.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+                sharingIntent.setType("text/plain");
+                sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Check out this awesome trailer!");
+                sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, "https://www.youtube.com/watch?v=" + videos.get(0).get(TAG_KEY));
+                startActivity(Intent.createChooser(sharingIntent, "Share via"));
             }
         });
 
