@@ -1,6 +1,5 @@
 package com.nano.popularmovies;
 
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
@@ -23,7 +22,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
@@ -152,13 +150,6 @@ public class MovieDetailFragment extends Fragment {
      * The dummy content this fragment is presenting.
      */
 
-    public static String humanReadableByteCount(long bytes, boolean si) {
-        int unit = si ? 1000 : 1024;
-        if (bytes < unit) return bytes + " B";
-        int exp = (int) (Math.log(bytes) / Math.log(unit));
-        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp - 1) + (si ? "" : "i");
-        return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -367,34 +358,6 @@ public class MovieDetailFragment extends Fragment {
         }
     }
 
-    private void showTorList() {
-
-        final Dialog dialog = new Dialog(getActivity());
-
-
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setCanceledOnTouchOutside(true);
-        dialog.setContentView(R.layout.tor_list);
-
-        ListView lv = (ListView) dialog.findViewById(R.id.lvTor);
-        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                try {
-                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(torrents.get(position).get("tor_magnet")));
-                    startActivity(browserIntent);
-                } catch (Exception e) {
-                    Toast.makeText(getActivity(), "No Torrent found", Toast.LENGTH_SHORT).show();
-                    Log.e("error", e.toString());
-                }
-            }
-        });
-
-        lv.setAdapter(new TorListAdapter());
-
-        dialog.show();
-
-    }
 
     public class ListViewAdapter extends BaseAdapter {
 
@@ -521,7 +484,7 @@ public class MovieDetailFragment extends Fragment {
             if (poster != null) {
                 generatePallete(poster);
                 if (ivPoster.getWidth() > 0)
-                ivPoster.setImageBitmap(Bitmap.createScaledBitmap(poster, ivPoster.getWidth(), ivPoster.getHeight(), false));
+                    ivPoster.setImageBitmap(Bitmap.createScaledBitmap(poster, ivPoster.getWidth(), ivPoster.getHeight(), false));
             }
 
 
@@ -725,139 +688,6 @@ public class MovieDetailFragment extends Fragment {
             ivThumb.setImageBitmap(DBBitmapUtility.getImage(thumbDB));
             ivPoster.setImageBitmap(DBBitmapUtility.getImage(big));
             super.onPostExecute(aVoid);
-        }
-    }
-
-    private class SerachYTS extends AsyncTask<Void, Void, Void> {
-
-        String key;
-
-        @Override
-        protected void onPreExecute() {
-            pd = new ProgressDialog(getActivity());
-            pd.setMessage("Searching torrents...");
-            pd.setCancelable(false);
-            pd.show();
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-
-            String url = "https://getstrike.net/api/v2/torrents/search/?phrase=" + name.replace(" ", "%20");
-            String jsonStr = null;
-
-            OkHttpClient client = new OkHttpClient();
-
-            Request request = new Request.Builder()
-                    .url(url)
-                    .build();
-
-            Response response = null;
-
-            try {
-                response = client.newCall(request).execute();
-                jsonStr = response.body().string();
-            } catch (IOException e) {
-                e.printStackTrace();
-                Log.d("Response", "Error: " + e);
-            }
-
-            Log.d("Response: ", "> " + jsonStr);
-
-            if (jsonStr != null) {
-                try {
-                    JSONObject jsonObj = new JSONObject(jsonStr);
-
-                    dataArray = jsonObj.getJSONArray("torrents");
-
-                    for (int i = 0; i < dataArray.length(); i++) {
-                        JSONObject data = dataArray.getJSONObject(i);
-
-
-                        String title = data.getString("torrent_title");
-                        String seeds = data.getString("seeds");
-                        String leeches = data.getString("leeches");
-                        String size = data.getString("size");
-                        key = data.getString("magnet_uri");
-
-                        HashMap<String, String> torrent = new HashMap<>();
-                        torrent.put("tor_title", title);
-                        torrent.put("tor_seeds", seeds);
-                        torrent.put("tor_leeches", leeches);
-                        torrent.put("tor_size", size);
-                        torrent.put("tor_magnet", key);
-
-                        torrents.add(torrent);
-                        Log.e("magnet", key);
-
-
-                    }
-                } catch (JSONException e) {
-                    Log.e("error", e.toString());
-
-                }
-            } else {
-                Log.e("ServiceHandler", "Couldn't get any data from the url");
-            }
-
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            pd.dismiss();
-            super.onPostExecute(aVoid);
-            if (torrents.size() > 0) {
-                showTorList();
-            } else {
-                Toast.makeText(getActivity(), "No Torrent found", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
-    public class TorListAdapter extends BaseAdapter {
-
-        @Override
-        public int getCount() {
-            return torrents.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return null;
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return 0;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-
-            View v = convertView;
-
-            if (v == null) {
-                LayoutInflater inflater = (LayoutInflater) getActivity()
-                        .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                v = inflater.inflate(R.layout.tor_row, parent, false);
-
-            }
-
-
-            TextView tvTitle = (TextView) v.findViewById(R.id.tvTorTitle);
-            TextView tvSize = (TextView) v.findViewById(R.id.tvTorSize);
-            TextView tvSeeds = (TextView) v.findViewById(R.id.tvTorSeeds);
-            TextView tvLeeches = (TextView) v.findViewById(R.id.tvTorLeeches);
-
-            tvTitle.setText(torrents.get(position).get("tor_title"));
-            tvSize.setText(humanReadableByteCount(Long.parseLong(torrents.get(position).get("tor_size")), true));
-            tvSeeds.setText(torrents.get(position).get("tor_seeds"));
-            tvLeeches.setText(torrents.get(position).get("tor_leeches"));
-
-            return v;
         }
     }
 }
