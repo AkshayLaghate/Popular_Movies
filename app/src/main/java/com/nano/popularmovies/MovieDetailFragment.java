@@ -520,11 +520,12 @@ public class MovieDetailFragment extends Fragment {
 
             if (poster != null) {
                 generatePallete(poster);
+                if (ivPoster.getWidth() > 0)
                 ivPoster.setImageBitmap(Bitmap.createScaledBitmap(poster, ivPoster.getWidth(), ivPoster.getHeight(), false));
             }
 
 
-            if (thumb != null)
+            if (thumb != null && ivThumb.getWidth() > 0)
                 ivThumb.setImageBitmap(Bitmap.createScaledBitmap(thumb, ivThumb.getWidth(), ivThumb.getHeight(), false));
 
 
