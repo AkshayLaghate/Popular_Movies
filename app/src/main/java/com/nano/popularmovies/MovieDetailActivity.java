@@ -3,7 +3,11 @@ package com.nano.popularmovies;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
 
 /**
  * An activity representing a single Movie detail screen. This
@@ -16,11 +20,16 @@ import android.view.MenuItem;
  */
 public class MovieDetailActivity extends ActionBarActivity {
 
+    @Bind(R.id.toolbar)
+    Toolbar bar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_detail);
 
+        ButterKnife.bind(this);
+        setSupportActionBar(bar);
         // Show the Up button in the action bar.
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -37,12 +46,16 @@ public class MovieDetailActivity extends ActionBarActivity {
             // Create the detail fragment and add it to the activity
             // using a fragment transaction.
             Bundle arguments = new Bundle();
-            arguments.putString(MovieDetailFragment.ARG_ITEM_ID,
-                    getIntent().getStringExtra(MovieDetailFragment.ARG_ITEM_ID));
+            arguments.putString(MovieDetailFragment.ARG_ITEM_ID, getIntent().getStringExtra(MovieDetailFragment.ARG_ITEM_ID));
+            arguments.putString(MovieDetailFragment.ARG_MOVIE_NAME, getIntent().getStringExtra(MovieDetailFragment.ARG_MOVIE_NAME));
+            arguments.putString(MovieDetailFragment.ARG_MOVIE_DESC, getIntent().getStringExtra(MovieDetailFragment.ARG_MOVIE_DESC));
+            arguments.putString(MovieDetailFragment.ARG_MOVIE_DATE, getIntent().getStringExtra(MovieDetailFragment.ARG_MOVIE_DATE));
+            arguments.putString(MovieDetailFragment.ARG_MOVIE_RATING, getIntent().getStringExtra(MovieDetailFragment.ARG_MOVIE_RATING));
+            arguments.putString(MovieDetailFragment.ARG_MOVIE_THUMB, getIntent().getStringExtra(MovieDetailFragment.ARG_MOVIE_THUMB));
             MovieDetailFragment fragment = new MovieDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.movie_detail_container, fragment)
+                    .replace(R.id.movie_detail_container, fragment)
                     .commit();
         }
     }

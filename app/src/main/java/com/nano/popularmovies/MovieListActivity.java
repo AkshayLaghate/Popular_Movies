@@ -29,13 +29,13 @@ import butterknife.Bind;
 public class MovieListActivity extends ActionBarActivity
         implements MovieListFragment.OnMovieSelectedListener {
 
-    @Bind(R.id.toolbar)
-    Toolbar bar;
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
      */
-    private boolean mTwoPane;
+    protected static boolean mTwoPane;
+    @Bind(R.id.toolbar)
+    Toolbar bar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -174,8 +174,13 @@ public class MovieListActivity extends ActionBarActivity
         } else {
             // In single-pane mode, simply start the detail activity
             // for the selected item ID.
-            Intent detailIntent = new Intent(this, MovieDetailActivity.class);
-            detailIntent.putExtra(MovieDetailFragment.ARG_ITEM_ID, name);
+            Intent detailIntent = new Intent(this, DetailsActivity.class);
+            detailIntent.putExtra(MovieDetailFragment.ARG_ITEM_ID, id);
+            detailIntent.putExtra(MovieDetailFragment.ARG_MOVIE_NAME, name);
+            detailIntent.putExtra(MovieDetailFragment.ARG_MOVIE_DESC, description);
+            detailIntent.putExtra(MovieDetailFragment.ARG_MOVIE_DATE, date);
+            detailIntent.putExtra(MovieDetailFragment.ARG_MOVIE_RATING, rating);
+            detailIntent.putExtra(MovieDetailFragment.ARG_MOVIE_THUMB, thumb);
             startActivity(detailIntent);
         }
     }

@@ -35,7 +35,7 @@
         android:name="com.nano.popularmovies.MovieListFragment"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="2"
+        android:layout_weight="2.5"
         tools:layout="@android:layout/list_content" />
 
     <FrameLayout

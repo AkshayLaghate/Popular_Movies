@@ -148,7 +148,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         super.onCreate(savedInstanceState);
         // getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS | WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
 
-        setContentView(R.layout.detail_new);
+        setContentView(R.layout.detail_activity_new);
 
         ButterKnife.bind(this);
         tintManager = new SystemBarTintManager(this);
@@ -167,12 +167,12 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         fab.setOnClickListener(this);
 
         Bundle bag = getIntent().getExtras();
-        movie_id = bag.getString("movie_id");
-        name = bag.getString("movie_title");
-        description = bag.getString("movie_desc");
-        date = bag.getString("movie_release");
-        rating = bag.getString("movie_rating");
-        poster_path = bag.getString("poster_path");
+        movie_id = bag.getString(MovieDetailFragment.ARG_ITEM_ID);
+        name = bag.getString(MovieDetailFragment.ARG_MOVIE_NAME);
+        description = bag.getString(MovieDetailFragment.ARG_MOVIE_DESC);
+        date = bag.getString(MovieDetailFragment.ARG_MOVIE_DATE);
+        rating = bag.getString(MovieDetailFragment.ARG_MOVIE_RATING);
+        poster_path = bag.getString(MovieDetailFragment.ARG_MOVIE_THUMB);
 
         tiny = new TinyDB(this);
         posterList = new ArrayList<>();
@@ -812,7 +812,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
                 Log.e("ServiceHandler", "Couldn't get any data from the url");
             }
 
-
+            client = null;
             return null;
         }
 
@@ -820,6 +820,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         protected void onPostExecute(Void aVoid) {
             pd.dismiss();
             super.onPostExecute(aVoid);
+
             if (torrents.size() > 0) {
                 showTorList();
             } else {

@@ -97,7 +97,6 @@ public class MovieListFragment extends Fragment {
     String query_Rating = "vote_average.desc";
     String query_Popular = "popularity.desc";
     String query = query_Popular;
-    private Callbacks movieListCallback;
     private String api_key = "3545a57a2f23dac5f3a1a0ddb84aa0df";
     /**
      * The current activated item position. Only used on tablets.
@@ -178,7 +177,10 @@ public class MovieListFragment extends Fragment {
 
                 //openDetails(position);
                 clearGridColor();
-                sgridView.getChildAt(position).setBackgroundColor(getResources().getColor(R.color.grey_500));
+
+                if (MovieListActivity.mTwoPane) {
+                    sgridView.getChildAt(position).setBackgroundColor(getResources().getColor(R.color.grey_500));
+                }
                 mCallback.onMovieSelected(movieList.get(position).get(TAG_ID), movieList.get(position).get(TAG_NAME),
                         movieList.get(position).get(TAG_DESCRIPTION), movieList.get(position).get(TAG_DATE),
                         movieList.get(position).get(TAG_RATING), movieList.get(position).get(TAG_THUMBNAIL));
@@ -633,4 +635,5 @@ public class MovieListFragment extends Fragment {
 
 
     }
+
 }
