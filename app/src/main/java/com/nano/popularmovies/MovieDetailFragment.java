@@ -56,7 +56,7 @@ import butterknife.ButterKnife;
 /**
  * A fragment representing a single Movie detail screen.
  * This fragment is either contained in a {@link MovieListActivity}
- * in two-pane mode (on tablets) or a {@link MovieDetailActivity}
+ * in two-pane mode (on tablets) or a {@link DetailsActivity}
  * on handsets.
  */
 public class MovieDetailFragment extends Fragment {
