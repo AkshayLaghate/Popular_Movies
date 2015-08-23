@@ -18,6 +18,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -120,7 +121,23 @@ public class MovieListFragment extends Fragment {
 
         // TODO: replace with a real list adapter.
         setHasOptionsMenu(true);
+        setRetainInstance(true);
+        metrics = this.getResources().getDisplayMetrics();
+        width = metrics.widthPixels;
+        height = metrics.heightPixels;
+
+        adapter = new ImageAdapter(getActivity());
+        movieList = new ArrayList<HashMap<String, String>>();
+        if (savedInstanceState == null) {
+            if (isNetworkOnline()) {
+                new GetMovies().execute(query_Popular);
+            } else {
+                Toast.makeText(getActivity(), "Check Network Connection and try again!",
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
     }
+
 
     @Nullable
     @Override
@@ -132,18 +149,10 @@ public class MovieListFragment extends Fragment {
         // Toast.makeText(this, "Memory Available = " + Runtime.getRuntime().maxMemory() / 1000, Toast.LENGTH_SHORT).show();
 
 
-        metrics = this.getResources().getDisplayMetrics();
-        width = metrics.widthPixels;
-        height = metrics.heightPixels;
-
-
-        adapter = new ImageAdapter(getActivity());
-
         pd = new ProgressDialog(getActivity());
 
         pd.setCancelable(false);
 
-        movieList = new ArrayList<HashMap<String, String>>();
 
         poster_list = new ArrayList<>();
 
@@ -162,13 +171,13 @@ public class MovieListFragment extends Fragment {
             }
         });
 
-
-        if (isNetworkOnline()) {
-            new GetMovies().execute(query_Popular);
-        } else {
-            Toast.makeText(getActivity(), "Check Network Connection and try again!",
-                    Toast.LENGTH_SHORT).show();
-        }
+        sgridView.setVisibility(View.INVISIBLE);
+        swipe.post(new Runnable() {
+            @Override
+            public void run() {
+                swipe.setRefreshing(true);
+            }
+        });
 
 
         sgridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -194,6 +203,11 @@ public class MovieListFragment extends Fragment {
         return v;
     }
 
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+    }
+
     private void clearGridColor() {
         for (int i = 0; i < sgridView.getChildCount(); i++) {
             sgridView.getChildAt(i).setBackgroundColor(Color.WHITE);
@@ -211,6 +225,13 @@ public class MovieListFragment extends Fragment {
         switch (item.getItemId()) {
             case R.id.refresh:
 
+                sgridView.setVisibility(View.INVISIBLE);
+                swipe.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        swipe.setRefreshing(true);
+                    }
+                });
                 movies = null;
                 movieList.clear();
                 if (isNetworkOnline()) {
@@ -224,6 +245,13 @@ public class MovieListFragment extends Fragment {
 
             case R.id.menuSortNewest:
 
+                sgridView.setVisibility(View.INVISIBLE);
+                swipe.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        swipe.setRefreshing(true);
+                    }
+                });
                 item.setChecked(true);
 
                 movies = null;
@@ -245,7 +273,13 @@ public class MovieListFragment extends Fragment {
                 break;
 
             case R.id.menuSortRating:
-
+                sgridView.setVisibility(View.INVISIBLE);
+                swipe.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        swipe.setRefreshing(true);
+                    }
+                });
                 item.setChecked(true);
                 movies = null;
                 movieList.clear();
@@ -522,14 +556,8 @@ public class MovieListFragment extends Fragment {
             super.onPreExecute();
             // Showing progress dialog
 
-            sgridView.setVisibility(View.INVISIBLE);
-            swipe.post(new Runnable() {
-                @Override
-                public void run() {
-                    swipe.setRefreshing(true);
-                }
-            });
 
+            Log.e("Tag", "Downloading Movies ");
 
         }
 
